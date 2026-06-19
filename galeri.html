@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Katalog layanan HIJAOE: konstruksi, las, aluminium, kaca, atap, plafon, interior, dan furnitur custom di Makassar."
+    >
+    <meta name="theme-color" content="#101411">
+    <title>Katalog Layanan HIJAOE | Makassar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="assets/css/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Lewati ke konten</a>
+
+    <header class="site-header">
+      <div class="site-header__inner container">
+        <a class="brand" href="index.html#beranda" aria-label="HIJAOE, kembali ke beranda">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span>HIJAOE</span>
+        </a>
+
+        <button
+          class="icon-button menu-button"
+          id="menu-button"
+          type="button"
+          aria-label="Buka menu"
+          aria-controls="primary-navigation"
+          aria-expanded="false"
+        >
+          <i data-lucide="menu" aria-hidden="true"></i>
+        </button>
+
+        <nav
+          class="primary-navigation"
+          id="primary-navigation"
+          aria-label="Navigasi utama"
+          data-open="false"
+        >
+          <a href="index.html#layanan">Layanan</a>
+          <a href="index.html#proyek">Proyek</a>
+          <a href="galeri.html" aria-current="page">Katalog</a>
+          <a href="index.html#tentang">Tentang</a>
+          <a href="index.html#kontak">Kontak</a>
+          <a
+            class="button button--compact button--green"
+            href="#"
+            data-whatsapp
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i data-lucide="message-circle" aria-hidden="true"></i>
+            Konsultasi
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="catalog-hero" aria-labelledby="catalog-title">
+        <div class="container catalog-hero__inner">
+          <div>
+            <p class="eyebrow">
+              <span></span>
+              Katalog pekerjaan
+            </p>
+            <h1 id="catalog-title">Katalog Layanan HIJAOE</h1>
+          </div>
+          <p>
+            Pilih jenis pekerjaan yang paling dekat dengan kebutuhan Anda, lalu
+            tanyakan langsung melalui WhatsApp.
+          </p>
+        </div>
+      </section>
+
+      <section class="catalog section" aria-labelledby="catalog-grid-title">
+        <div class="container">
+          <header class="catalog__toolbar">
+            <div>
+              <p class="eyebrow eyebrow--dark">50 jenis layanan</p>
+              <h2 id="catalog-grid-title">Pilih pekerjaan yang ingin ditanyakan.</h2>
+            </div>
+            <div
+              class="catalog-filters"
+              id="catalog-filters"
+              aria-label="Filter kategori katalog"
+            ></div>
+          </header>
+
+          <div class="catalog-grid" id="catalog-grid"></div>
+
+          <p class="catalog-empty" id="catalog-empty" hidden>
+            Tidak ada layanan pada kategori ini.
+          </p>
+
+          <div class="catalog__more">
+            <button class="button button--green" id="load-more" type="button">
+              Muat lebih banyak
+              <i data-lucide="chevron-down" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="catalog-lightbox" id="catalog-lightbox">
+      <button
+        class="icon-button catalog-lightbox__close"
+        type="button"
+        aria-label="Tutup gambar"
+        data-lightbox-close
+      >
+        <i data-lucide="x" aria-hidden="true"></i>
+      </button>
+      <div class="catalog-lightbox__media">
+        <img data-lightbox-image src="" alt="">
+      </div>
+      <div class="catalog-lightbox__content">
+        <span data-lightbox-category></span>
+        <h2 data-lightbox-title></h2>
+        <a
+          class="button button--green"
+          href="#"
+          target="_blank"
+          rel="noreferrer"
+          data-lightbox-whatsapp
+        >
+          <i data-lucide="message-circle" aria-hidden="true"></i>
+          Tanyakan layanan ini
+        </a>
+      </div>
+    </dialog>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <a class="brand brand--footer" href="index.html#beranda">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span>HIJAOE</span>
+        </a>
+        <p>© <span data-year></span> HIJAOE. Konstruksi & bengkel custom Makassar.</p>
+      </div>
+    </footer>
+
+    <a
+      class="floating-whatsapp"
+      href="#"
+      data-whatsapp
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Konsultasi dengan HIJAOE melalui WhatsApp"
+    >
+      <i data-lucide="message-circle" aria-hidden="true"></i>
+      <span>Chat HIJAOE</span>
+    </a>
+
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script type="module" src="assets/js/gallery-page.js"></script>
+  </body>
+</html>
