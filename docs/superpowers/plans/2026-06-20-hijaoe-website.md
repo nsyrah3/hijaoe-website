@@ -1,6 +1,6 @@
-# HIJAOE Website Implementation Plan
+﻿# HIJAOE Website Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build a responsive, modern-industrial one-page website for HIJAOE that presents its services and sends prospective customers to WhatsApp.
 
@@ -31,7 +31,7 @@
 - Create: `assets/js/site-data.js`
 - Create: `tests/site-data.test.js`
 
-- [ ] **Step 1: Write failing data tests**
+- [x] **Step 1: Write failing data tests**
 
 ```js
 import test from "node:test";
@@ -62,13 +62,13 @@ test("WhatsApp URL uses the Indonesian international number and encoded message"
 });
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `node --test tests/site-data.test.js`
 
 Expected: FAIL because `assets/js/site-data.js` does not exist.
 
-- [ ] **Step 3: Implement package metadata and confirmed business data**
+- [x] **Step 3: Implement package metadata and confirmed business data**
 
 Create `package.json` with ES modules and scripts:
 
@@ -86,13 +86,13 @@ Create `package.json` with ES modules and scripts:
 
 Implement `site-data.js` with the confirmed phone number, hours, Makassar location, Google Maps URL, five service categories, five ordering steps, three service-area labels, and a `buildWhatsAppUrl(message)` function that calls `encodeURIComponent`.
 
-- [ ] **Step 4: Run data tests**
+- [x] **Step 4: Run data tests**
 
 Run: `npm test`
 
 Expected: 3 tests PASS.
 
-- [ ] **Step 5: Commit foundation**
+- [x] **Step 5: Commit foundation**
 
 ```bash
 git add package.json assets/js/site-data.js tests/site-data.test.js
@@ -109,23 +109,23 @@ git commit -m "feat: add HIJAOE business data"
 - Create: `assets/images/project-roofing.webp`
 - Create: `assets/images/project-interior.webp`
 
-- [ ] **Step 1: Generate a wide hero asset**
+- [x] **Step 1: Generate a wide hero asset**
 
 Generate a realistic wide photograph of a modest Indonesian metalworking and construction workshop in Makassar, showing steel frames, welding equipment, aluminium profiles, and active craftsmanship. Keep the right side visually clear enough for cropping and avoid visible brand names or fabricated project claims.
 
-- [ ] **Step 2: Generate five category assets**
+- [x] **Step 2: Generate five category assets**
 
 Generate realistic landscape images for construction/renovation, metal gates and welding, aluminium/glass storefronts, roofing/canopies, and aluminium interior furniture. These are temporary category illustrations, not labelled customer projects.
 
-- [ ] **Step 3: Convert and optimize assets**
+- [x] **Step 3: Convert and optimize assets**
 
 Convert each output to WebP. Target approximately 1600 px width for the hero and 960 px width for category assets, with each file under 350 KB where visual quality permits.
 
-- [ ] **Step 4: Inspect all assets**
+- [x] **Step 4: Inspect all assets**
 
 Verify every image is nonblank, has no malformed tools or structures, contains no unrelated text, and crops cleanly at `object-fit: cover`.
 
-- [ ] **Step 5: Commit visual assets**
+- [x] **Step 5: Commit visual assets**
 
 ```bash
 git add assets/images
@@ -140,7 +140,7 @@ git commit -m "assets: add temporary HIJAOE visuals"
 - Create: `index.html`
 - Create: `assets/js/main.js`
 
-- [ ] **Step 1: Write failing rendering tests**
+- [x] **Step 1: Write failing rendering tests**
 
 ```js
 import test from "node:test";
@@ -167,23 +167,23 @@ test("process renderer numbers each step", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `node --test tests/render.test.js`
 
 Expected: FAIL because `assets/js/render.js` does not exist.
 
-- [ ] **Step 3: Implement pure rendering helpers**
+- [x] **Step 3: Implement pure rendering helpers**
 
 Create an HTML escaping helper and export `renderServices`, `renderProjects`, and `renderProcess`. Ensure external data is escaped, project images use meaningful `alt` text and `loading="lazy"`, and each temporary project item contains the visible label `Inspirasi kategori`.
 
-- [ ] **Step 4: Run rendering tests**
+- [x] **Step 4: Run rendering tests**
 
 Run: `npm test`
 
 Expected: 6 total tests PASS.
 
-- [ ] **Step 5: Build the semantic page**
+- [x] **Step 5: Build the semantic page**
 
 Create `index.html` with:
 
@@ -196,11 +196,11 @@ Create `index.html` with:
 - Fixed WhatsApp button with accessible label.
 - Lucide browser script and `assets/js/main.js` module.
 
-- [ ] **Step 6: Initialize dynamic content**
+- [x] **Step 6: Initialize dynamic content**
 
 In `main.js`, import data and render helpers, populate the dynamic sections, set all consultation links to the generated WhatsApp URL, set the current footer year, close the mobile menu after navigation, and call `lucide.createIcons()`.
 
-- [ ] **Step 7: Commit page behavior**
+- [x] **Step 7: Commit page behavior**
 
 ```bash
 git add index.html assets/js/main.js assets/js/render.js tests/render.test.js
@@ -213,23 +213,23 @@ git commit -m "feat: build HIJAOE one-page structure"
 - Create: `assets/css/styles.css`
 - Modify: `index.html`
 
-- [ ] **Step 1: Define design tokens**
+- [x] **Step 1: Define design tokens**
 
 Add CSS custom properties for charcoal backgrounds, off-white surfaces, steel gray borders, HIJAOE green, text colors, 4-8 px radii, stable container widths, and restrained shadows.
 
-- [ ] **Step 2: Style the desktop experience**
+- [x] **Step 2: Style the desktop experience**
 
 Implement a full-bleed photographic hero, compact sticky header, five-column service grid where space allows, fixed-aspect project grid, unframed section bands, process timeline, service-area strip, and high-contrast contact section.
 
-- [ ] **Step 3: Style mobile navigation and layout**
+- [x] **Step 3: Style mobile navigation and layout**
 
 At mobile widths, use a menu icon, single-column content, horizontal-safe buttons, stable image aspect ratios, and a full-width bottom WhatsApp action that does not cover footer content.
 
-- [ ] **Step 4: Add interaction and accessibility states**
+- [x] **Step 4: Add interaction and accessibility states**
 
 Add visible keyboard focus, reduced-motion handling, hover states that do not shift layout, sufficient color contrast, readable line lengths, and `scroll-margin-top` for anchored sections.
 
-- [ ] **Step 5: Scan CSS against design constraints**
+- [x] **Step 5: Scan CSS against design constraints**
 
 Run:
 
@@ -239,7 +239,7 @@ rg -n "border-radius|font-size:.*vw|letter-spacing:.*-" assets/css/styles.css
 
 Expected: no viewport-scaled font sizes, no negative letter spacing, and no card radius above 8 px.
 
-- [ ] **Step 6: Commit responsive styling**
+- [x] **Step 6: Commit responsive styling**
 
 ```bash
 git add assets/css/styles.css index.html
@@ -252,7 +252,7 @@ git commit -m "style: add HIJAOE industrial responsive design"
 - Create: `README.md`
 - Modify: `docs/superpowers/plans/2026-06-20-hijaoe-website.md`
 
-- [ ] **Step 1: Document content updates**
+- [x] **Step 1: Document content updates**
 
 Create `README.md` documenting:
 
@@ -262,19 +262,19 @@ Create `README.md` documenting:
 - How to replace temporary images while keeping filenames stable.
 - That temporary images must be replaced with authentic project photographs before presenting them as completed HIJAOE projects.
 
-- [ ] **Step 2: Run automated tests**
+- [x] **Step 2: Run automated tests**
 
 Run: `npm test`
 
 Expected: all unit tests PASS with zero failures.
 
-- [ ] **Step 3: Start the local server**
+- [x] **Step 3: Start the local server**
 
 Run: `npm run serve -- --listen 4173`
 
 Expected: local site available at `http://localhost:4173`.
 
-- [ ] **Step 4: Verify desktop and mobile in Playwright**
+- [x] **Step 4: Verify desktop and mobile in Playwright**
 
 Check at 1440x900 and 390x844:
 
@@ -287,11 +287,11 @@ Check at 1440x900 and 390x844:
 - WhatsApp links contain `628976010103`.
 - Google Maps link opens the supplied HIJAOE listing.
 
-- [ ] **Step 5: Check browser console and asset loading**
+- [x] **Step 5: Check browser console and asset loading**
 
 Expected: no JavaScript errors, no missing assets, and all image requests return HTTP 200.
 
-- [ ] **Step 6: Update plan checkboxes and commit**
+- [x] **Step 6: Update plan checkboxes and commit**
 
 ```bash
 git add README.md docs/superpowers/plans/2026-06-20-hijaoe-website.md
