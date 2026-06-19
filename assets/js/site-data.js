@@ -1,3 +1,5 @@
+import { catalogItems, featuredCatalogIds } from "./catalog-data.js";
+
 export const business = {
   name: "HIJAOE",
   tagline: "Dari bengkel, menjadi bagian dari bangunan Anda.",
@@ -71,38 +73,17 @@ export const services = [
   },
 ];
 
-export const projects = [
-  {
-    title: "Bangunan & Renovasi",
-    category: "Konstruksi",
-    image: "assets/images/project-construction.webp",
-    alt: "Ilustrasi pekerjaan konstruksi dan renovasi rumah",
-  },
-  {
-    title: "Pagar & Konstruksi Besi",
-    category: "Besi & Las",
-    image: "assets/images/project-metalwork.webp",
-    alt: "Ilustrasi pagar besi modern hasil pekerjaan bengkel",
-  },
-  {
-    title: "Aluminium & Kaca",
-    category: "Aluminium",
-    image: "assets/images/project-aluminium.webp",
-    alt: "Ilustrasi pintu dan jendela aluminium dengan kaca",
-  },
-  {
-    title: "Kanopi & Atap",
-    category: "Eksterior",
-    image: "assets/images/project-roofing.webp",
-    alt: "Ilustrasi kanopi dan atap untuk rumah",
-  },
-  {
-    title: "Furnitur Custom",
-    category: "Interior",
-    image: "assets/images/project-interior.webp",
-    alt: "Ilustrasi kabinet dan furnitur aluminium custom",
-  },
-];
+export const projects = featuredCatalogIds.map((id) => {
+  const catalogItem = catalogItems.find((item) => item.id === id);
+
+  return {
+    id: catalogItem.id,
+    title: catalogItem.title,
+    category: catalogItem.categoryLabel,
+    image: catalogItem.image,
+    alt: catalogItem.alt,
+  };
+});
 
 export const processSteps = [
   {

@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  catalogItems,
+  featuredCatalogIds,
+} from "../assets/js/catalog-data.js";
+import {
   business,
+  projects,
   serviceAreas,
   services,
   buildWhatsAppUrl,
@@ -37,6 +42,15 @@ test("service area stays general to Makassar and nearby areas", () => {
     `${business.serviceArea} ${JSON.stringify(serviceAreas)}`,
     /Bulukumba|Palopo/,
   );
+});
+
+test("homepage projects are six featured catalog services", () => {
+  assert.equal(projects.length, 6);
+  assert.deepEqual(
+    projects.map(({ id }) => id),
+    featuredCatalogIds,
+  );
+  assert.ok(projects.every((project) => catalogItems.some((item) => item.id === project.id)));
 });
 
 test("WhatsApp URL uses the international number and encoded message", () => {
