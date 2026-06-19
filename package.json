@@ -6,5 +6,8 @@
   "scripts": {
     "test": "node --test",
     "serve": "npx --yes serve ."
+  },
+  "devDependencies": {
+    "sharp": "^0.35.2"
   }
 }
