@@ -35,6 +35,8 @@ document.querySelector("[data-phone]").textContent = business.phoneDisplay;
 document.querySelector("[data-hours]").textContent = business.hours;
 document.querySelector("[data-closed]").textContent = business.closed;
 document.querySelector("[data-city]").textContent = business.city;
+document.querySelector("[data-area-title]").textContent =
+  business.serviceAreaTitle;
 document.querySelector("[data-service-area]").textContent = business.serviceArea;
 document.querySelector("[data-map]").href = business.mapUrl;
 document.querySelector("[data-year]").textContent = new Date().getFullYear();

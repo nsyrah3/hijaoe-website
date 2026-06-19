@@ -6,8 +6,9 @@ export const business = {
   hours: "Senin-Sabtu, 08.00-17.00",
   closed: "Minggu tutup",
   city: "Makassar",
+  serviceAreaTitle: "Melayani Makassar dan sekitarnya.",
   serviceArea:
-    "Melayani Makassar dan pengiriman atau pengerjaan luar kota di Sulawesi Selatan sesuai kesepakatan.",
+    "Pengerjaan dan layanan tersedia untuk wilayah Makassar serta area sekitarnya sesuai kebutuhan.",
   mapUrl:
     "https://www.google.com/maps/place/HIJAOE/@-5.0853324,119.5224587,15z/data=!3m1!4b1!4m6!3m5!1s0x2dbefbcbfcf97c0b:0xb8cad84f65c55a60!8m2!3d-5.0853325!4d119.5327585!16s%2Fg%2F11g0vyt5dz",
 };
@@ -128,16 +129,8 @@ export const processSteps = [
 
 export const serviceAreas = [
   {
-    city: "Makassar",
-    note: "Pengerjaan dan survei utama",
-  },
-  {
-    city: "Bulukumba",
-    note: "Pengiriman dan proyek sesuai kesepakatan",
-  },
-  {
-    city: "Palopo",
-    note: "Pengiriman dan proyek sesuai kesepakatan",
+    city: "Makassar & Sekitarnya",
+    note: "Area pelayanan utama HIJAOE",
   },
 ];
 

@@ -8,7 +8,7 @@ Membuat website satu halaman untuk memperkenalkan HIJAOE sebagai penyedia jasa k
 
 - Pemilik rumah yang ingin membangun atau merenovasi.
 - Pemilik toko, sekolah, kantor, dan usaha yang membutuhkan pekerjaan custom.
-- Pelanggan di Makassar dan daerah lain di Sulawesi Selatan, termasuk Bulukumba dan Palopo.
+- Pelanggan di Makassar dan wilayah sekitarnya.
 
 ## Gaya Visual
 
@@ -26,7 +26,7 @@ Membuat website satu halaman untuk memperkenalkan HIJAOE sebagai penyedia jasa k
 4. Bagian proyek pilihan dengan slot foto sementara yang mudah diganti.
 5. Tentang HIJAOE dan penjelasan bahwa pekerjaan dibuat sesuai ukuran serta kebutuhan pelanggan.
 6. Alur pemesanan: konsultasi, survei atau pengukuran, penawaran, pengerjaan, dan pemasangan atau pengiriman.
-7. Jangkauan layanan di Makassar dan wilayah Sulawesi Selatan sesuai kesepakatan.
+7. Jangkauan layanan di Makassar dan sekitarnya.
 8. Testimoni, disembunyikan sampai testimoni asli tersedia.
 9. Kontak, jam operasional, Google Maps, dan tombol WhatsApp.
 10. Tombol WhatsApp mengambang untuk perangkat seluler dan desktop.
@@ -37,7 +37,7 @@ Membuat website satu halaman untuk memperkenalkan HIJAOE sebagai penyedia jasa k
 - Nomor WhatsApp: 0897-6010-103.
 - Jam buka: Senin-Sabtu, 08.00-17.00; Minggu tutup.
 - Lokasi: Makassar.
-- Area layanan: Makassar dan luar kota di Sulawesi Selatan sesuai kesepakatan.
+- Area layanan: Makassar dan sekitarnya.
 - Foto awal menggunakan placeholder yang jelas dan akan diganti dengan foto proyek asli.
 - Klaim tentang harga, garansi, pengalaman, jumlah proyek, dan kecepatan pengerjaan tidak ditampilkan sebelum dikonfirmasi.
 

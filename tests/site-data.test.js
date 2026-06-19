@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   business,
+  serviceAreas,
   services,
   buildWhatsAppUrl,
 } from "../assets/js/site-data.js";
@@ -25,6 +26,16 @@ test("service groups cover the five confirmed categories", () => {
       "Atap & Plafon",
       "Interior & Furnitur",
     ],
+  );
+});
+
+test("service area stays general to Makassar and nearby areas", () => {
+  assert.equal(business.serviceAreaTitle, "Melayani Makassar dan sekitarnya.");
+  assert.equal(serviceAreas.length, 1);
+  assert.equal(serviceAreas[0].city, "Makassar & Sekitarnya");
+  assert.doesNotMatch(
+    `${business.serviceArea} ${JSON.stringify(serviceAreas)}`,
+    /Bulukumba|Palopo/,
   );
 });
 
