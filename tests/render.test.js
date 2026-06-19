@@ -22,7 +22,7 @@ test("service renderer exposes escaped titles and detail lists", () => {
   assert.match(html, /data-lucide="anvil"/);
 });
 
-test("project renderer marks temporary images as category inspiration", () => {
+test("project renderer does not place an inspiration badge over images", () => {
   const html = renderProjects([
     {
       title: "Pekerjaan Besi",
@@ -32,7 +32,7 @@ test("project renderer marks temporary images as category inspiration", () => {
     },
   ]);
 
-  assert.match(html, /Inspirasi kategori/);
+  assert.doesNotMatch(html, /Inspirasi kategori/);
   assert.match(html, /loading="lazy"/);
   assert.match(html, /sample\.webp/);
 });

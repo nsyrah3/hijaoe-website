@@ -555,19 +555,6 @@ section[id] {
   bottom: 22px;
 }
 
-.project-item__type {
-  display: inline-block;
-  margin-bottom: 20px;
-  padding: 5px 8px;
-  background: rgba(10, 14, 11, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 2px;
-  color: var(--steel-200);
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .project-item p {
   margin: 0 0 4px;
   color: var(--green-400);

@@ -41,7 +41,6 @@ export function renderProjects(items) {
           >
           <div class="project-item__shade"></div>
           <div class="project-item__content">
-            <span class="project-item__type">Inspirasi kategori</span>
             <p>${escapeHtml(project.category)}</p>
             <h3>${escapeHtml(project.title)}</h3>
           </div>
