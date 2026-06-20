@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import * as catalog from "../assets/js/catalog.js";
 import {
   buildServiceWhatsAppMessage,
   filterCatalog,
@@ -66,4 +67,26 @@ test("Escape closes an open catalog lightbox", () => {
   assert.equal(shouldCloseLightboxOnKey("Escape", true), true);
   assert.equal(shouldCloseLightboxOnKey("Escape", false), false);
   assert.equal(shouldCloseLightboxOnKey("Enter", true), false);
+});
+
+test("load-more announcement reports the new and total visible item counts", () => {
+  assert.equal(typeof catalog.buildCatalogLoadAnnouncement, "function");
+  assert.equal(
+    catalog.buildCatalogLoadAnnouncement(12, 24, 50),
+    "12 layanan baru ditampilkan. 24 dari 50 layanan terlihat.",
+  );
+});
+
+test("the first new catalog item receives focus only after the button is hidden", () => {
+  assert.equal(typeof catalog.shouldFocusFirstNewCatalogItem, "function");
+  assert.equal(catalog.shouldFocusFirstNewCatalogItem(false, 12), false);
+  assert.equal(catalog.shouldFocusFirstNewCatalogItem(true, 0), false);
+  assert.equal(catalog.shouldFocusFirstNewCatalogItem(true, 2), true);
+});
+
+test("Escape restores menu focus only when the mobile menu was open", () => {
+  assert.equal(typeof catalog.shouldRestoreMenuFocusOnKey, "function");
+  assert.equal(catalog.shouldRestoreMenuFocusOnKey("Escape", true), true);
+  assert.equal(catalog.shouldRestoreMenuFocusOnKey("Escape", false), false);
+  assert.equal(catalog.shouldRestoreMenuFocusOnKey("Enter", true), false);
 });

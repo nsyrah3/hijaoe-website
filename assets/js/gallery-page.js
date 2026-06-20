@@ -1,10 +1,13 @@
 import { catalogCategories, catalogItems } from "./catalog-data.js";
 import {
+  buildCatalogLoadAnnouncement,
   buildServiceWhatsAppUrl,
   filterCatalog,
   getCatalogBatch,
   renderCatalogCards,
   shouldCloseLightboxOnKey,
+  shouldFocusFirstNewCatalogItem,
+  shouldRestoreMenuFocusOnKey,
 } from "./catalog.js";
 import { buildWhatsAppUrl } from "./site-data.js";
 
@@ -22,6 +25,7 @@ const filters = document.querySelector("#catalog-filters");
 const grid = document.querySelector("#catalog-grid");
 const emptyState = document.querySelector("#catalog-empty");
 const loadMore = document.querySelector("#load-more");
+const loadStatus = document.querySelector("#catalog-load-status");
 const menuButton = document.querySelector("#menu-button");
 const primaryNavigation = document.querySelector("#primary-navigation");
 const dialog = document.querySelector("#catalog-lightbox");
@@ -83,6 +87,7 @@ function renderGrid() {
 function setCategory(category) {
   state.category = category;
   state.visibleCount = BATCH_SIZE;
+  loadStatus.textContent = "";
 
   filters.querySelectorAll("[data-category]").forEach((button) => {
     button.setAttribute(
@@ -133,8 +138,26 @@ filters.addEventListener("click", (event) => {
 });
 
 loadMore.addEventListener("click", () => {
+  const items = filteredItems();
+  const previousVisibleCount = Math.min(state.visibleCount, items.length);
+
   state.visibleCount += BATCH_SIZE;
   renderGrid();
+
+  const visibleCount = Math.min(state.visibleCount, items.length);
+  const newItemCount = visibleCount - previousVisibleCount;
+  loadStatus.textContent = buildCatalogLoadAnnouncement(
+    newItemCount,
+    visibleCount,
+    items.length,
+  );
+
+  if (shouldFocusFirstNewCatalogItem(loadMore.hidden, newItemCount)) {
+    grid
+      .querySelectorAll("[data-lightbox-id]")
+      .item(previousVisibleCount)
+      ?.focus();
+  }
 });
 
 grid.addEventListener("click", (event) => {
@@ -169,7 +192,15 @@ primaryNavigation.querySelectorAll("a").forEach((link) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    const shouldRestoreMenuFocus = shouldRestoreMenuFocusOnKey(
+      event.key,
+      menuButton.getAttribute("aria-expanded") === "true",
+    );
+
     closeMenu();
+    if (shouldRestoreMenuFocus) {
+      menuButton.focus();
+    }
   }
 
   if (shouldCloseLightboxOnKey(event.key, dialog.open)) {

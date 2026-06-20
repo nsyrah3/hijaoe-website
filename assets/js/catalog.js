@@ -17,6 +17,25 @@ export function shouldCloseLightboxOnKey(key, isOpen) {
   return key === "Escape" && isOpen;
 }
 
+export function shouldRestoreMenuFocusOnKey(key, isOpen) {
+  return key === "Escape" && isOpen;
+}
+
+export function shouldFocusFirstNewCatalogItem(
+  isLoadMoreHidden,
+  newItemCount,
+) {
+  return isLoadMoreHidden && newItemCount > 0;
+}
+
+export function buildCatalogLoadAnnouncement(
+  newItemCount,
+  visibleCount,
+  totalCount,
+) {
+  return `${newItemCount} layanan baru ditampilkan. ${visibleCount} dari ${totalCount} layanan terlihat.`;
+}
+
 export function buildServiceWhatsAppMessage(title) {
   return `Halo HIJAOE, saya ingin bertanya tentang layanan ${title}.`;
 }

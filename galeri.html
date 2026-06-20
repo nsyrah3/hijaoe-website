@@ -103,6 +103,13 @@
           </p>
 
           <div class="catalog__more">
+            <p
+              class="visually-hidden"
+              id="catalog-load-status"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></p>
             <button class="button button--green" id="load-more" type="button">
               Muat lebih banyak
               <i data-lucide="chevron-down" aria-hidden="true"></i>
@@ -112,7 +119,11 @@
       </section>
     </main>
 
-    <dialog class="catalog-lightbox" id="catalog-lightbox">
+    <dialog
+      class="catalog-lightbox"
+      id="catalog-lightbox"
+      aria-labelledby="catalog-lightbox-title"
+    >
       <button
         class="icon-button catalog-lightbox__close"
         type="button"
@@ -122,11 +133,11 @@
         <i data-lucide="x" aria-hidden="true"></i>
       </button>
       <div class="catalog-lightbox__media">
-        <img data-lightbox-image src="" alt="">
+        <img data-lightbox-image alt="">
       </div>
       <div class="catalog-lightbox__content">
         <span data-lightbox-category></span>
-        <h2 data-lightbox-title></h2>
+        <h2 id="catalog-lightbox-title" data-lightbox-title></h2>
         <a
           class="button button--green"
           href="#"
