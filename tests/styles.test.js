@@ -6,6 +6,7 @@ const styles = readFileSync(
   new URL("../assets/css/styles.css", import.meta.url),
   "utf8",
 );
+const baseStyles = styles.split("@media", 1)[0];
 
 test("catalog card images keep a stable three-by-two frame", () => {
   assert.match(
@@ -21,7 +22,7 @@ test("catalog card images keep a stable three-by-two frame", () => {
 test("catalog uses two columns at the tablet breakpoint", () => {
   assert.match(
     styles,
-    /@media \(max-width: 1100px\)\s*\{\s*\.services-grid\s*\{[^}]*\}\s*\.catalog-grid\s*\{\s*grid-template-columns:\s*repeat\(2,/,
+    /@media \(max-width: 1100px\)[\s\S]*?\.catalog-grid\s*\{\s*grid-template-columns:\s*repeat\(2,/,
   );
 });
 
@@ -37,5 +38,27 @@ test("project preview keeps a stable visual frame and responsive thumbnails", ()
   assert.match(
     styles,
     /@media \(max-width: 680px\)[\s\S]*\.project-preview__thumbs\s*\{[^}]*overflow-x:\s*auto;/,
+  );
+});
+
+test("services use balanced desktop, tablet, and mobile grids", () => {
+  assert.match(
+    baseStyles,
+    /\.services-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 860px\)[\s\S]*?\.services-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 580px\)[\s\S]*?\.services-grid\s*\{[^}]*grid-template-columns:\s*1fr;/,
+  );
+});
+
+test("services use continuous card dividers", () => {
+  assert.match(
+    styles,
+    /\.services-grid\s*\{[^}]*border-left:\s*1px solid var\(--border-light\);[^}]*\}[\s\S]*?\.service-item\s*\{[^}]*border-bottom:\s*1px solid var\(--border-light\);/,
   );
 });
