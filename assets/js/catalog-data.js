@@ -1,5 +1,9 @@
 export const catalogCategories = [
-  { id: "konstruksi-renovasi", label: "Konstruksi & Renovasi" },
+  {
+    id: "konstruksi-renovasi",
+    label: "Konstruksi & Renovasi",
+    filterLabel: "Konstruksi",
+  },
   { id: "besi-las", label: "Besi & Las" },
   { id: "aluminium-kaca", label: "Aluminium & Kaca" },
   { id: "atap-plafon", label: "Atap & Plafon" },
@@ -60,7 +64,7 @@ export const catalogItems = [
   ),
   catalogItem(
     "pondasi-dan-cor",
-    "Pondasi dan Cor",
+    "Pekerjaan Pondasi dan Cor",
     "konstruksi-renovasi",
     "Pekerjaan pondasi dan pengecoran lantai untuk bangunan sederhana",
   ),

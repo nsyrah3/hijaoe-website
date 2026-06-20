@@ -6,6 +6,7 @@ import {
   filterCatalog,
   getCatalogBatch,
   renderCatalogCards,
+  shouldCloseLightboxOnKey,
 } from "../assets/js/catalog.js";
 
 const sample = [
@@ -59,4 +60,10 @@ test("WhatsApp message includes the selected service name", () => {
     buildServiceWhatsAppMessage("Lemari Aluminium"),
     "Halo HIJAOE, saya ingin bertanya tentang layanan Lemari Aluminium.",
   );
+});
+
+test("Escape closes an open catalog lightbox", () => {
+  assert.equal(shouldCloseLightboxOnKey("Escape", true), true);
+  assert.equal(shouldCloseLightboxOnKey("Escape", false), false);
+  assert.equal(shouldCloseLightboxOnKey("Enter", true), false);
 });

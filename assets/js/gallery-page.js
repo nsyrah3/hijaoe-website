@@ -2,7 +2,9 @@ import { catalogCategories, catalogItems } from "./catalog-data.js";
 import {
   buildServiceWhatsAppUrl,
   filterCatalog,
+  getCatalogBatch,
   renderCatalogCards,
+  shouldCloseLightboxOnKey,
 } from "./catalog.js";
 import { buildWhatsAppUrl } from "./site-data.js";
 
@@ -43,7 +45,13 @@ function refreshIcons() {
 }
 
 function renderFilters() {
-  const categories = [{ id: "semua", label: "Semua" }, ...catalogCategories];
+  const categories = [
+    { id: "semua", label: "Semua" },
+    ...catalogCategories.map((category) => ({
+      ...category,
+      label: category.filterLabel ?? category.label,
+    })),
+  ];
 
   filters.innerHTML = categories
     .map(
@@ -63,7 +71,7 @@ function renderFilters() {
 
 function renderGrid() {
   const items = filteredItems();
-  const visibleItems = items.slice(0, state.visibleCount);
+  const visibleItems = getCatalogBatch(items, 0, state.visibleCount);
 
   grid.innerHTML = renderCatalogCards(visibleItems);
   emptyState.hidden = items.length > 0;
@@ -103,9 +111,15 @@ function openLightbox(item, trigger) {
 }
 
 function closeLightbox() {
-  dialog.close();
+  if (dialog.open) {
+    dialog.close();
+  }
+}
+
+function restoreLightboxFocus() {
   if (state.lastTrigger) {
     state.lastTrigger.focus();
+    state.lastTrigger = null;
   }
 }
 
@@ -141,6 +155,8 @@ dialog.addEventListener("click", (event) => {
   }
 });
 
+dialog.addEventListener("close", restoreLightboxFocus);
+
 menuButton.addEventListener("click", () => {
   const isOpen = menuButton.getAttribute("aria-expanded") === "true";
   menuButton.setAttribute("aria-expanded", String(!isOpen));
@@ -154,6 +170,10 @@ primaryNavigation.querySelectorAll("a").forEach((link) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeMenu();
+  }
+
+  if (shouldCloseLightboxOnKey(event.key, dialog.open)) {
+    closeLightbox();
   }
 });
 

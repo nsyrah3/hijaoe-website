@@ -665,15 +665,17 @@ section[id] {
 .catalog-card__image-button {
   display: block;
   width: 100%;
+  aspect-ratio: 3 / 2;
   padding: 0;
   border: 0;
+  overflow: hidden;
   background: var(--charcoal-800);
   cursor: zoom-in;
 }
 
 .catalog-card__image-button img {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -1082,7 +1084,7 @@ section[id] {
   }
 
   .catalog-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .service-item:nth-child(4),

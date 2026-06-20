@@ -1,6 +1,6 @@
 # Website HIJAOE
 
-Website satu halaman untuk HIJAOE, usaha konstruksi, las, aluminium, interior, eksterior, dan furnitur custom di Makassar.
+Website HIJAOE untuk usaha konstruksi, las, aluminium, interior, eksterior, dan furnitur custom di Makassar. Website terdiri dari halaman utama dan katalog 50 jenis layanan.
 
 ## Menjalankan Website
 
@@ -22,34 +22,48 @@ Edit `assets/js/site-data.js` untuk mengubah:
 - Daftar layanan
 - Tahapan pemesanan
 - Area pelayanan
-- Data galeri
 
 Konten yang belum terkonfirmasi, seperti harga, garansi, jumlah proyek, dan lama pengalaman, sengaja tidak ditampilkan.
 
-## Mengganti Foto
+## Mengelola Katalog
 
-Semua gambar sementara berada di `assets/images/`:
+Data katalog berada di `assets/js/catalog-data.js`. Setiap layanan memiliki `id`, judul, kategori, path gambar, dan teks alternatif. Nama file gambarnya mengikuti `id`, misalnya:
 
-- `hijaoe-workshop.webp`
-- `project-construction.webp`
-- `project-metalwork.webp`
-- `project-aluminium.webp`
-- `project-roofing.webp`
-- `project-interior.webp`
+```js
+{
+  id: "lemari-aluminium",
+  image: "assets/images/catalog/lemari-aluminium.webp",
+}
+```
 
-Ganti file dengan foto asli memakai nama yang sama agar tidak perlu mengubah kode. Gunakan gambar WebP dengan orientasi lanskap. Rekomendasi:
+Semua gambar katalog berada di `assets/images/catalog/`. Untuk mengganti satu visual dengan foto asli:
 
-- Hero: lebar sekitar 1600 px
-- Foto kategori: lebar sekitar 960 px
-- Ukuran file: kurang dari 350 KB
+1. Pilih foto yang sesuai dengan jenis layanannya.
+2. Ubah ke WebP berorientasi lanskap.
+3. Gunakan nama file yang sama, misalnya `lemari-aluminium.webp`.
+4. Ganti file lama tanpa perlu mengubah kode.
 
-Gambar yang tersedia saat ini merupakan visual buatan AI dan ditandai sebagai **Inspirasi kategori**. Jangan menampilkannya sebagai dokumentasi proyek HIJAOE. Setelah foto asli tersedia, ubah teks galeri dan keterangan gambar di `assets/js/site-data.js`.
+Rekomendasi gambar katalog: lebar 960 px dan ukuran kurang dari 250 KB.
+
+Untuk menambah layanan tanpa mengubah struktur saat ini, tambahkan satu item pada setiap kategori agar jumlahnya tetap seimbang, siapkan file WebP dengan `id` yang sama, lalu jalankan `npm.cmd test`. Untuk menghapus layanan, hapus jumlah item yang sama dari setiap kategori dan pastikan ID yang dihapus tidak masih tercantum di `featuredCatalogIds`.
+
+Tes saat ini mengharuskan 50 layanan dengan 10 item per kategori. Jika jumlah atau keseimbangan kategori memang sengaja diubah, perbarui kontrak di `tests/catalog-data.test.js` bersama perubahan datanya.
+
+Visual katalog yang tersedia saat ini dibuat dengan AI untuk menggambarkan jenis layanan yang dapat dipesan. Visual tersebut bukan dokumentasi proyek pelanggan HIJAOE. Ganti dengan foto asli secara bertahap ketika dokumentasi pekerjaan sudah tersedia.
+
+## Mengganti Hero
+
+Gambar hero berada di `assets/images/hijaoe-workshop.webp`. Ganti memakai nama yang sama agar tidak perlu mengubah kode. Rekomendasi: WebP lanskap, lebar sekitar 1600 px, dan ukuran kurang dari 350 KB.
 
 ## Struktur
 
 - `index.html`: struktur halaman dan metadata
+- `galeri.html`: halaman katalog lengkap
 - `assets/css/styles.css`: tampilan modern-industrial dan layout responsif
 - `assets/js/site-data.js`: data bisnis
+- `assets/js/catalog-data.js`: data 50 layanan katalog
+- `assets/js/catalog.js`: filter, batching, kartu, dan tautan WhatsApp katalog
+- `assets/js/gallery-page.js`: interaksi halaman katalog dan lightbox
 - `assets/js/render.js`: renderer komponen
 - `assets/js/main.js`: inisialisasi dan interaksi halaman
-- `tests/`: pengujian data serta renderer
+- `tests/`: pengujian data, renderer, helper katalog, dan aset

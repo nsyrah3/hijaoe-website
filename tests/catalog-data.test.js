@@ -21,6 +21,13 @@ test("catalog contains 50 unique services split evenly across five categories", 
   }
 });
 
+test("catalog uses the approved filter label and service names", () => {
+  assert.equal(catalogCategories[0].filterLabel, "Konstruksi");
+  assert.ok(
+    catalogItems.some(({ title }) => title === "Pekerjaan Pondasi dan Cor"),
+  );
+});
+
 test("catalog assets use stable WebP paths and descriptive alt text", () => {
   for (const item of catalogItems) {
     assert.match(item.image, /^assets\/images\/catalog\/[a-z0-9-]+\.webp$/);

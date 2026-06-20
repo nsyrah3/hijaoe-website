@@ -1,6 +1,6 @@
 # HIJAOE Service Catalog Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add a 50-image service catalog with category filters, progressive loading, lightbox viewing, and service-specific WhatsApp enquiries.
 
@@ -31,7 +31,7 @@
 - Create: `tests/catalog-data.test.js`
 - Create: `assets/js/catalog-data.js`
 
-- [ ] **Step 1: Write failing catalog-data tests**
+- [x] **Step 1: Write failing catalog-data tests**
 
 ```js
 import test from "node:test";
@@ -66,13 +66,13 @@ test("homepage has six valid featured catalog entries", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `node --test tests/catalog-data.test.js`
 
 Expected: FAIL because `assets/js/catalog-data.js` does not exist.
 
-- [ ] **Step 3: Implement the full catalog dataset**
+- [x] **Step 3: Implement the full catalog dataset**
 
 Create five category definitions and 50 records matching the approved design. Each record must include:
 
@@ -89,13 +89,13 @@ Create five category definitions and 50 records matching the approved design. Ea
 
 Use the exact 50 service names from the catalog design. Export six featured IDs covering all five categories, with one additional high-demand aluminium item.
 
-- [ ] **Step 4: Run catalog-data tests**
+- [x] **Step 4: Run catalog-data tests**
 
 Run: `npm.cmd test`
 
 Expected: all existing tests plus 3 catalog-data tests PASS.
 
-- [ ] **Step 5: Commit catalog contract**
+- [x] **Step 5: Commit catalog contract**
 
 ```powershell
 git add assets/js/catalog-data.js tests/catalog-data.test.js
@@ -107,7 +107,7 @@ git commit -m "feat: add HIJAOE catalog data"
 **Files:**
 - Create: `assets/images/catalog/*.webp`
 
-- [ ] **Step 1: Generate 10 construction and renovation images**
+- [x] **Step 1: Generate 10 construction and renovation images**
 
 Use one built-in image-generation call per service. Each prompt must name the exact service, use a realistic Indonesian home or small-business setting, request landscape framing, mechanically believable construction, no logos, no text, and no watermark.
 
@@ -126,7 +126,7 @@ pengecatan-eksterior
 pembangunan-rumah-sederhana
 ```
 
-- [ ] **Step 2: Generate 10 iron and welding images**
+- [x] **Step 2: Generate 10 iron and welding images**
 
 Generate:
 
@@ -143,7 +143,7 @@ gerobak-booth-besi
 rangka-papan-nama
 ```
 
-- [ ] **Step 3: Generate 10 aluminium and glass images**
+- [x] **Step 3: Generate 10 aluminium and glass images**
 
 Generate:
 
@@ -160,7 +160,7 @@ pintu-kamar-mandi-aluminium
 kawat-nyamuk-aluminium
 ```
 
-- [ ] **Step 4: Generate 10 roof and ceiling images**
+- [x] **Step 4: Generate 10 roof and ceiling images**
 
 Generate:
 
@@ -177,7 +177,7 @@ pergola-besi
 carport-beratap
 ```
 
-- [ ] **Step 5: Generate 10 interior and furniture images**
+- [x] **Step 5: Generate 10 interior and furniture images**
 
 Generate:
 
@@ -194,7 +194,7 @@ wall-panel
 booth-kios-usaha
 ```
 
-- [ ] **Step 6: Copy, inspect, and optimize each category batch**
+- [x] **Step 6: Copy, inspect, and optimize each category batch**
 
 After each ten-image batch:
 
@@ -204,7 +204,7 @@ After each ten-image batch:
 4. Convert each image to 960 px wide WebP using Sharp at quality 74-78.
 5. Confirm every file is below 250 KB where quality permits.
 
-- [ ] **Step 7: Validate asset count and dimensions**
+- [x] **Step 7: Validate asset count and dimensions**
 
 Run a Node script using Sharp to assert:
 
@@ -217,7 +217,7 @@ all expected filenames from catalog-data.js exist
 
 Expected: zero missing or unexpected files.
 
-- [ ] **Step 8: Commit catalog assets**
+- [x] **Step 8: Commit catalog assets**
 
 ```powershell
 git add assets/images/catalog
@@ -230,7 +230,7 @@ git commit -m "assets: add HIJAOE service catalog images"
 - Create: `tests/catalog.test.js`
 - Create: `assets/js/catalog.js`
 
-- [ ] **Step 1: Write failing behavior tests**
+- [x] **Step 1: Write failing behavior tests**
 
 ```js
 import test from "node:test";
@@ -275,13 +275,13 @@ test("WhatsApp message includes the selected service name", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `node --test tests/catalog.test.js`
 
 Expected: FAIL because `assets/js/catalog.js` does not exist.
 
-- [ ] **Step 3: Implement pure catalog helpers**
+- [x] **Step 3: Implement pure catalog helpers**
 
 Implement:
 
@@ -294,13 +294,13 @@ export function buildServiceWhatsAppMessage(title) {}
 
 Reuse HTML escaping behavior from `render.js` by exporting `escapeHtml`, rather than duplicating string escaping.
 
-- [ ] **Step 4: Run all unit tests**
+- [x] **Step 4: Run all unit tests**
 
 Run: `npm.cmd test`
 
 Expected: all tests PASS.
 
-- [ ] **Step 5: Commit catalog helpers**
+- [x] **Step 5: Commit catalog helpers**
 
 ```powershell
 git add assets/js/render.js assets/js/catalog.js tests/catalog.test.js
@@ -314,7 +314,7 @@ git commit -m "feat: add catalog filtering and rendering"
 - Create: `assets/js/gallery-page.js`
 - Modify: `assets/css/styles.css`
 
-- [ ] **Step 1: Build semantic catalog page**
+- [x] **Step 1: Build semantic catalog page**
 
 Create `galeri.html` with:
 
@@ -325,7 +325,7 @@ Create `galeri.html` with:
 - A native `<dialog id="catalog-lightbox">` containing image, category, title, WhatsApp link, and icon-only close button.
 - Canonical navigation back to `index.html` sections.
 
-- [ ] **Step 2: Implement page state**
+- [x] **Step 2: Implement page state**
 
 In `gallery-page.js`, keep:
 
@@ -347,14 +347,14 @@ On `Muat lebih banyak`:
 - Increase `visibleCount` by 12.
 - Hide the button when all matching records are visible.
 
-- [ ] **Step 3: Implement lightbox behavior**
+- [x] **Step 3: Implement lightbox behavior**
 
 - Open the native dialog from an image click or card details action.
 - Populate image, alt text, category, title, and service-specific WhatsApp URL.
 - Close with the icon button, Escape, or click on the dialog backdrop.
 - Restore focus to the card that opened it.
 
-- [ ] **Step 4: Style the catalog**
+- [x] **Step 4: Style the catalog**
 
 Add:
 
@@ -366,7 +366,7 @@ Add:
 - Native dialog backdrop and a full-bleed image region inside the lightbox.
 - Stable load-more button and empty state.
 
-- [ ] **Step 5: Run unit tests and CSS constraint scan**
+- [x] **Step 5: Run unit tests and CSS constraint scan**
 
 Run:
 
@@ -377,7 +377,7 @@ rg -n "font-size:.*vw|letter-spacing:.*-|border-radius: (9|[1-9][0-9])px" assets
 
 Expected: all tests PASS and no prohibited CSS patterns.
 
-- [ ] **Step 6: Commit catalog page**
+- [x] **Step 6: Commit catalog page**
 
 ```powershell
 git add galeri.html assets/js/gallery-page.js assets/css/styles.css
@@ -392,34 +392,34 @@ git commit -m "feat: build HIJAOE catalog page"
 - Modify: `index.html`
 - Modify: `tests/site-data.test.js`
 
-- [ ] **Step 1: Write failing homepage-feature tests**
+- [x] **Step 1: Write failing homepage-feature tests**
 
 Add assertions that homepage projects contain exactly six records derived from `featuredCatalogIds`, and that all IDs exist in `catalogItems`.
 
-- [ ] **Step 2: Run the focused test**
+- [x] **Step 2: Run the focused test**
 
 Run: `node --test tests/site-data.test.js`
 
 Expected: FAIL because homepage project data is still independent from the catalog.
 
-- [ ] **Step 3: Derive homepage projects from catalog records**
+- [x] **Step 3: Derive homepage projects from catalog records**
 
 Import `catalogItems` and `featuredCatalogIds` into `site-data.js`, replace the current five hardcoded project records with six mapped catalog records, and preserve the existing `title`, `category`, `image`, and `alt` renderer interface.
 
-- [ ] **Step 4: Add catalog navigation**
+- [x] **Step 4: Add catalog navigation**
 
 - Add `Katalog` to desktop and mobile navigation.
 - Add `Lihat semua pekerjaan` below the homepage gallery.
 - Link both to `galeri.html`.
 - Keep `Proyek` as the anchor link to the homepage selection.
 
-- [ ] **Step 5: Run all tests**
+- [x] **Step 5: Run all tests**
 
 Run: `npm.cmd test`
 
 Expected: all tests PASS.
 
-- [ ] **Step 6: Commit homepage integration**
+- [x] **Step 6: Commit homepage integration**
 
 ```powershell
 git add assets/js/site-data.js assets/js/main.js index.html tests/site-data.test.js
@@ -432,7 +432,7 @@ git commit -m "feat: connect homepage to HIJAOE catalog"
 - Modify: `README.md`
 - Modify: `docs/superpowers/plans/2026-06-20-hijaoe-catalog.md`
 
-- [ ] **Step 1: Update maintenance documentation**
+- [x] **Step 1: Update maintenance documentation**
 
 Document:
 
@@ -441,13 +441,13 @@ Document:
 - How to add or remove a service without breaking category counts.
 - That generated visuals illustrate available service types and must not be presented as customer-project documentation.
 
-- [ ] **Step 2: Run final automated tests**
+- [x] **Step 2: Run final automated tests**
 
 Run: `npm.cmd test`
 
 Expected: all tests PASS with zero failures.
 
-- [ ] **Step 3: Verify HTTP assets**
+- [x] **Step 3: Verify HTTP assets**
 
 Use PowerShell to request:
 
@@ -458,7 +458,7 @@ Use PowerShell to request:
 
 Expected: HTTP 200 for every request.
 
-- [ ] **Step 4: Verify desktop catalog**
+- [x] **Step 4: Verify desktop catalog**
 
 At 1440x900:
 
@@ -469,7 +469,7 @@ At 1440x900:
 - WhatsApp URL includes the selected service title.
 - No horizontal overflow or browser errors.
 
-- [ ] **Step 5: Verify mobile catalog**
+- [x] **Step 5: Verify mobile catalog**
 
 At 390x844:
 
@@ -479,14 +479,14 @@ At 390x844:
 - Mobile navigation opens and closes.
 - Lightbox image and controls fit without overlap.
 
-- [ ] **Step 6: Verify homepage**
+- [x] **Step 6: Verify homepage**
 
 - Six featured services render.
 - `Lihat semua pekerjaan` and `Katalog` open `galeri.html`.
 - Hero and the next section remain properly framed.
 - No regressions in existing WhatsApp, map, or mobile-menu behavior.
 
-- [ ] **Step 7: Update checklist and commit documentation**
+- [x] **Step 7: Update checklist and commit documentation**
 
 ```powershell
 git add README.md docs/superpowers/plans/2026-06-20-hijaoe-catalog.md

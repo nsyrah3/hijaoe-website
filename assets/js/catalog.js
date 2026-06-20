@@ -13,6 +13,10 @@ export function getCatalogBatch(items, offset, limit = 12) {
   return items.slice(offset, offset + limit);
 }
 
+export function shouldCloseLightboxOnKey(key, isOpen) {
+  return key === "Escape" && isOpen;
+}
+
 export function buildServiceWhatsAppMessage(title) {
   return `Halo HIJAOE, saya ingin bertanya tentang layanan ${title}.`;
 }
