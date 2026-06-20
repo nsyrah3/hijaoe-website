@@ -8,18 +8,22 @@ import {
 } from "./site-data.js";
 import {
   renderProcess,
-  renderProjects,
+  renderProjectPreview,
   renderServiceAreas,
   renderServices,
 } from "./render.js";
 import { shouldRestoreMenuFocusOnKey } from "./catalog.js";
+import {
+  buildProjectPreviewUpdate,
+  getProjectThumbPressedState,
+} from "./project-preview.js";
 
 const consultationMessage =
   "Halo HIJAOE, saya ingin konsultasi mengenai pekerjaan konstruksi atau pesanan custom.";
 const whatsappUrl = buildWhatsAppUrl(consultationMessage);
 
 document.querySelector("#services-grid").innerHTML = renderServices(services);
-document.querySelector("#projects-grid").innerHTML = renderProjects(projects);
+document.querySelector("#projects-grid").innerHTML = renderProjectPreview(projects);
 document.querySelector("#process-list").innerHTML = renderProcess(processSteps);
 document.querySelector("#service-areas").innerHTML =
   renderServiceAreas(serviceAreas);
@@ -44,6 +48,48 @@ document.querySelector("[data-year]").textContent = new Date().getFullYear();
 
 const menuButton = document.querySelector("#menu-button");
 const primaryNavigation = document.querySelector("#primary-navigation");
+const projectPreview = document.querySelector("[data-project-preview]");
+
+function activateProjectPreview(button) {
+  if (!projectPreview || !button) {
+    return;
+  }
+
+  const update = buildProjectPreviewUpdate(button.dataset);
+  const image = projectPreview.querySelector("[data-project-preview-image]");
+  const category = projectPreview.querySelector("[data-project-preview-category]");
+  const title = projectPreview.querySelector("[data-project-preview-title]");
+
+  if (!update || !image || !category || !title) {
+    return;
+  }
+
+  image.src = update.image;
+  image.alt = update.alt;
+  category.textContent = update.category;
+  title.textContent = update.title;
+
+  const buttons = Array.from(projectPreview.querySelectorAll("[data-project-thumb]"));
+  const activeIndex = buttons.indexOf(button);
+  const pressedState = getProjectThumbPressedState(buttons.length, activeIndex);
+
+  buttons.forEach((thumb, index) => {
+    thumb.setAttribute("aria-pressed", pressedState[index]);
+  });
+}
+
+if (projectPreview) {
+  const hoverPreview = window.matchMedia("(hover: hover)").matches;
+
+  projectPreview.querySelectorAll("[data-project-thumb]").forEach((button) => {
+    button.addEventListener("click", () => activateProjectPreview(button));
+    button.addEventListener("focus", () => activateProjectPreview(button));
+
+    if (hoverPreview) {
+      button.addEventListener("pointerenter", () => activateProjectPreview(button));
+    }
+  });
+}
 
 function closeMenu() {
   menuButton.setAttribute("aria-expanded", "false");

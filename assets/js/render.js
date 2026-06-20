@@ -50,6 +50,57 @@ export function renderProjects(items) {
     .join("");
 }
 
+export function renderProjectPreview(items) {
+  const activeProject = items[0];
+
+  if (!activeProject) {
+    return "";
+  }
+
+  return `
+    <div class="project-preview" data-project-preview>
+      <article class="project-preview__stage">
+        <img
+          src="${escapeHtml(activeProject.image)}"
+          alt="${escapeHtml(activeProject.alt)}"
+          width="960"
+          height="640"
+          loading="lazy"
+          data-project-preview-image
+        >
+        <div class="project-preview__shade"></div>
+        <div class="project-preview__content">
+          <p data-project-preview-category>${escapeHtml(activeProject.category)}</p>
+          <h3 data-project-preview-title>${escapeHtml(activeProject.title)}</h3>
+        </div>
+      </article>
+      <div class="project-preview__thumbs" aria-label="Pilih contoh bidang pekerjaan">
+        ${items
+          .map(
+            (project, index) => `
+              <button
+                class="project-preview__thumb"
+                type="button"
+                aria-label="Tampilkan ${escapeHtml(project.title)}"
+                aria-pressed="${index === 0 ? "true" : "false"}"
+                data-project-thumb
+                data-project-title="${escapeHtml(project.title)}"
+                data-project-category="${escapeHtml(project.category)}"
+                data-project-image="${escapeHtml(project.image)}"
+                data-project-alt="${escapeHtml(project.alt)}"
+              >
+                <img src="${escapeHtml(project.image)}" alt="" width="160" height="107" loading="lazy">
+                <span>${escapeHtml(project.category)}</span>
+                <strong>${escapeHtml(project.title)}</strong>
+              </button>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
 export function renderProcess(items) {
   return items
     .map(
