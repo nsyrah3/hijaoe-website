@@ -44,6 +44,23 @@ export function buildServiceWhatsAppUrl(title) {
   return buildWhatsAppUrl(buildServiceWhatsAppMessage(title));
 }
 
+export function renderCatalogFilters(categories, activeCategory) {
+  return categories
+    .map(
+      (category) => `
+        <button
+          class="catalog-filter"
+          type="button"
+          data-category="${escapeHtml(category.id)}"
+          aria-pressed="${category.id === activeCategory ? "true" : "false"}"
+        >
+          ${escapeHtml(category.label)}
+        </button>
+      `,
+    )
+    .join("");
+}
+
 export function renderCatalogCards(items) {
   return items
     .map(

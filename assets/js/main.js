@@ -12,6 +12,7 @@ import {
   renderServiceAreas,
   renderServices,
 } from "./render.js";
+import { shouldRestoreMenuFocusOnKey } from "./catalog.js";
 
 const consultationMessage =
   "Halo HIJAOE, saya ingin konsultasi mengenai pekerjaan konstruksi atau pesanan custom.";
@@ -60,8 +61,14 @@ primaryNavigation.querySelectorAll("a").forEach((link) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
+  const shouldRestoreMenuFocus = shouldRestoreMenuFocusOnKey(
+    event.key,
+    menuButton.getAttribute("aria-expanded") === "true",
+  );
+
+  if (shouldRestoreMenuFocus) {
     closeMenu();
+    menuButton.focus();
   }
 });
 

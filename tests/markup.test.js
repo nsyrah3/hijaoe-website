@@ -10,6 +10,10 @@ const galleryHtml = readFileSync(
   new URL("../galeri.html", import.meta.url),
   "utf8",
 );
+const mainJs = readFileSync(
+  new URL("../assets/js/main.js", import.meta.url),
+  "utf8",
+);
 
 test("both pages declare the HIJAOE favicon", () => {
   for (const html of [indexHtml, galleryHtml]) {
@@ -55,4 +59,15 @@ test("catalog load-more feedback is exposed as a polite live status", () => {
   assert.match(statusTag, /\brole="status"/);
   assert.match(statusTag, /\baria-live="polite"/);
   assert.match(statusTag, /\bclass="visually-hidden"/);
+});
+
+test("homepage static copy keeps service area to Makassar and nearby areas", () => {
+  assert.doesNotMatch(indexHtml, /Sulawesi Selatan|Bulukumba|Palopo/i);
+  assert.match(indexHtml, /Makassar dan sekitarnya/i);
+  assert.match(indexHtml, /Makassar & Sekitarnya/);
+});
+
+test("homepage mobile menu restores focus after Escape closes it", () => {
+  assert.match(mainJs, /shouldRestoreMenuFocusOnKey/);
+  assert.match(mainJs, /menuButton\.focus\(\)/);
 });

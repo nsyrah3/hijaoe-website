@@ -4,6 +4,7 @@ import {
   buildServiceWhatsAppUrl,
   filterCatalog,
   getCatalogBatch,
+  renderCatalogFilters,
   renderCatalogCards,
   shouldCloseLightboxOnKey,
   shouldFocusFirstNewCatalogItem,
@@ -57,20 +58,7 @@ function renderFilters() {
     })),
   ];
 
-  filters.innerHTML = categories
-    .map(
-      (category) => `
-        <button
-          class="catalog-filter"
-          type="button"
-          data-category="${category.id}"
-          aria-pressed="${category.id === state.category ? "true" : "false"}"
-        >
-          ${category.label}
-        </button>
-      `,
-    )
-    .join("");
+  filters.innerHTML = renderCatalogFilters(categories, state.category);
 }
 
 function renderGrid() {

@@ -7,6 +7,7 @@ import {
   filterCatalog,
   getCatalogBatch,
   renderCatalogCards,
+  renderCatalogFilters,
   shouldCloseLightboxOnKey,
 } from "../assets/js/catalog.js";
 
@@ -54,6 +55,22 @@ test("catalog card exposes service data and lazy image", () => {
   assert.match(html, /data-catalog-id="b"/);
   assert.match(html, /loading="lazy"/);
   assert.match(html, /Tanyakan layanan ini/);
+});
+
+test("catalog filter renderer escapes labels and category ids", () => {
+  const html = renderCatalogFilters(
+    [
+      {
+        id: 'atap" onclick="alert(1)',
+        label: "Atap & <Plafon>",
+      },
+    ],
+    "semua",
+  );
+
+  assert.match(html, /data-category="atap&quot; onclick=&quot;alert\(1\)"/);
+  assert.match(html, /Atap &amp; &lt;Plafon&gt;/);
+  assert.doesNotMatch(html, /Atap & <Plafon>/);
 });
 
 test("WhatsApp message includes the selected service name", () => {
