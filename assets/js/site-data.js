@@ -45,19 +45,30 @@ export const services = [
     items: [
       "Kusen, pintu, dan jendela",
       "Etalase dan storefront",
-      "Partisi dan pintu lipat",
+      "Pintu geser dan pintu lipat",
       "Kaca tempered dan kawat nyamuk",
     ],
   },
   {
     icon: "warehouse",
-    title: "Atap & Plafon",
-    description: "Pemasangan penutup dan pelindung bangunan.",
+    title: "Atap & Kanopi",
+    description: "Pemasangan penutup dan pelindung area luar bangunan.",
     items: [
       "Kanopi dan rangka baja ringan",
       "Spandek, polikarbonat, dan alderon",
-      "Kanopi membran",
-      "Plafon PVC, gypsum, dan talang",
+      "Kanopi membran dan pergola",
+      "Talang air dan perbaikan atap bocor",
+    ],
+  },
+  {
+    icon: "panel-top",
+    title: "Plafon & Partisi",
+    description: "Pemisah ruang dan plafon interior untuk rumah maupun usaha.",
+    items: [
+      "Plafon PVC dan gypsum",
+      "Drop ceiling dan plafon kamar",
+      "Partisi kaca dan aluminium",
+      "Partisi kalsiboard, gypsum, dan PVC",
     ],
   },
   {

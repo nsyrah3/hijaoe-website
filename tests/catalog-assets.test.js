@@ -12,7 +12,7 @@ test("all catalog image files exist with expected dimensions", async () => {
   const files = await fs.readdir(catalogDirectory);
   const webpFiles = files.filter((file) => file.endsWith(".webp"));
 
-  assert.equal(webpFiles.length, 50);
+  assert.equal(webpFiles.length, 60);
 
   for (const item of catalogItems) {
     const filename = path.basename(item.image);

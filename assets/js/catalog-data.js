@@ -6,7 +6,8 @@ export const catalogCategories = [
   },
   { id: "besi-las", label: "Besi & Las" },
   { id: "aluminium-kaca", label: "Aluminium & Kaca" },
-  { id: "atap-plafon", label: "Atap & Plafon" },
+  { id: "atap-kanopi", label: "Atap & Kanopi" },
+  { id: "plafon-partisi", label: "Plafon & Partisi" },
   { id: "interior-furnitur", label: "Interior & Furnitur" },
 ];
 
@@ -167,6 +168,12 @@ export const catalogItems = [
     "Pintu aluminium untuk rumah toko atau ruangan dengan rangka kokoh",
   ),
   catalogItem(
+    "pintu-geser-aluminium",
+    "Pintu Geser Aluminium",
+    "aluminium-kaca",
+    "Pintu geser aluminium dan kaca untuk akses teras atau pembatas ruangan",
+  ),
+  catalogItem(
     "kusen-aluminium",
     "Kusen Aluminium",
     "aluminium-kaca",
@@ -183,12 +190,6 @@ export const catalogItems = [
     "Storefront Toko",
     "aluminium-kaca",
     "Tampilan depan toko dengan pintu kaca dan rangka aluminium",
-  ),
-  catalogItem(
-    "partisi-kaca",
-    "Partisi Kaca",
-    "aluminium-kaca",
-    "Partisi kaca aluminium untuk membagi ruang kantor rumah atau toko",
   ),
   catalogItem(
     "pintu-lipat-aluminium-kaca",
@@ -212,62 +213,123 @@ export const catalogItems = [
   catalogItem(
     "kanopi-alderon",
     "Kanopi Alderon",
-    "atap-plafon",
+    "atap-kanopi",
     "Kanopi alderon untuk carport rumah dengan rangka besi rapi",
   ),
   catalogItem(
     "kanopi-polikarbonat",
     "Kanopi Polikarbonat",
-    "atap-plafon",
+    "atap-kanopi",
     "Kanopi polikarbonat transparan untuk teras atau garasi rumah",
   ),
   catalogItem(
     "kanopi-spandek",
     "Kanopi Spandek",
-    "atap-plafon",
+    "atap-kanopi",
     "Kanopi spandek dengan rangka besi untuk halaman atau tempat usaha",
   ),
   catalogItem(
     "kanopi-membran",
     "Kanopi Membran",
-    "atap-plafon",
+    "atap-kanopi",
     "Kanopi membran putih untuk teras cafe halaman rumah atau area usaha",
   ),
   catalogItem(
     "rangka-atap-baja-ringan",
     "Rangka Atap Baja Ringan",
-    "atap-plafon",
+    "atap-kanopi",
     "Rangka atap baja ringan untuk rumah dengan pemasangan terukur",
   ),
   catalogItem(
-    "plafon-pvc",
-    "Plafon PVC",
-    "atap-plafon",
-    "Plafon PVC untuk ruangan rumah dengan panel rapi dan mudah dibersihkan",
-  ),
-  catalogItem(
-    "plafon-gypsum",
-    "Plafon Gypsum",
-    "atap-plafon",
-    "Plafon gypsum untuk ruang keluarga kamar atau toko dengan finishing halus",
+    "atap-spandek-rumah",
+    "Atap Spandek Rumah",
+    "atap-kanopi",
+    "Pemasangan atap spandek untuk teras samping atau bangunan tambahan rumah",
   ),
   catalogItem(
     "talang-air",
     "Talang Air",
-    "atap-plafon",
+    "atap-kanopi",
     "Talang air hujan untuk atap rumah dengan jalur pembuangan rapi",
   ),
   catalogItem(
     "pergola-besi",
     "Pergola Besi",
-    "atap-plafon",
+    "atap-kanopi",
     "Pergola besi untuk teras atau taman rumah dengan kisi-kisi dekoratif",
   ),
   catalogItem(
     "carport-beratap",
     "Carport Beratap",
-    "atap-plafon",
+    "atap-kanopi",
     "Carport beratap dengan rangka besi dan penutup atap untuk kendaraan",
+  ),
+  catalogItem(
+    "perbaikan-atap-bocor",
+    "Perbaikan Atap Bocor",
+    "atap-kanopi",
+    "Perbaikan area atap bocor talang dan sambungan penutup atap rumah",
+  ),
+
+  catalogItem(
+    "plafon-pvc",
+    "Plafon PVC",
+    "plafon-partisi",
+    "Plafon PVC untuk ruangan rumah dengan panel rapi dan mudah dibersihkan",
+  ),
+  catalogItem(
+    "plafon-gypsum",
+    "Plafon Gypsum",
+    "plafon-partisi",
+    "Plafon gypsum untuk ruang keluarga kamar atau toko dengan finishing halus",
+  ),
+  catalogItem(
+    "plafon-drop-ceiling",
+    "Plafon Drop Ceiling",
+    "plafon-partisi",
+    "Plafon drop ceiling gypsum dengan lampu tanam untuk ruang tamu atau toko",
+  ),
+  catalogItem(
+    "plafon-minimalis-ruang-tamu",
+    "Plafon Minimalis Ruang Tamu",
+    "plafon-partisi",
+    "Plafon minimalis ruang tamu dengan garis bersih dan pencahayaan sederhana",
+  ),
+  catalogItem(
+    "plafon-kamar-tidur",
+    "Plafon Kamar Tidur",
+    "plafon-partisi",
+    "Perbaikan atau pemasangan plafon kamar tidur dengan finishing rapi",
+  ),
+  catalogItem(
+    "partisi-kaca",
+    "Partisi Kaca",
+    "plafon-partisi",
+    "Partisi kaca aluminium untuk membagi ruang kantor rumah atau toko",
+  ),
+  catalogItem(
+    "partisi-kalsiboard",
+    "Partisi Kalsiboard",
+    "plafon-partisi",
+    "Partisi kalsiboard untuk membagi ruangan rumah toko atau area kerja",
+  ),
+  catalogItem(
+    "partisi-gypsum",
+    "Partisi Gypsum",
+    "plafon-partisi",
+    "Partisi gypsum dengan permukaan halus untuk pembagian ruang interior",
+  ),
+  catalogItem(
+    "partisi-pvc",
+    "Partisi PVC",
+    "plafon-partisi",
+    "Partisi PVC ringan untuk sekat ruangan yang mudah dibersihkan",
+  ),
+  catalogItem(
+    "sekat-ruangan-custom",
+    "Sekat Ruangan Custom",
+    "plafon-partisi",
+    "Sekat ruangan custom dengan panel dan rangka sesuai ukuran lokasi",
   ),
 
   catalogItem(
@@ -334,7 +396,7 @@ export const catalogItems = [
 
 export const featuredCatalogIds = [
   "lemari-aluminium",
-  "jendela-aluminium",
+  "partisi-kalsiboard",
   "pagar-geser-besi",
   "kanopi-alderon",
   "kitchen-set-aluminium",

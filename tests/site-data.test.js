@@ -20,15 +20,16 @@ test("business data contains the confirmed HIJAOE details", () => {
   assert.equal(business.city, "Makassar");
 });
 
-test("service groups cover the five confirmed categories", () => {
-  assert.equal(services.length, 5);
+test("service groups cover the six confirmed categories", () => {
+  assert.equal(services.length, 6);
   assert.deepEqual(
     services.map(({ title }) => title),
     [
       "Konstruksi & Renovasi",
       "Besi & Las",
       "Aluminium & Kaca",
-      "Atap & Plafon",
+      "Atap & Kanopi",
+      "Plafon & Partisi",
       "Interior & Furnitur",
     ],
   );
@@ -50,6 +51,7 @@ test("homepage projects are six featured catalog services", () => {
     projects.map(({ id }) => id),
     featuredCatalogIds,
   );
+  assert.equal(new Set(projects.map(({ category }) => category)).size, 6);
   assert.ok(projects.every((project) => catalogItems.some((item) => item.id === project.id)));
 });
 

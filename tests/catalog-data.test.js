@@ -7,10 +7,11 @@ import {
   featuredCatalogIds,
 } from "../assets/js/catalog-data.js";
 
-test("catalog contains 50 unique services split evenly across five categories", () => {
-  assert.equal(catalogItems.length, 50);
-  assert.equal(new Set(catalogItems.map(({ id }) => id)).size, 50);
-  assert.equal(new Set(catalogItems.map(({ title }) => title)).size, 50);
+test("catalog contains 60 unique services split evenly across six categories", () => {
+  assert.equal(catalogCategories.length, 6);
+  assert.equal(catalogItems.length, 60);
+  assert.equal(new Set(catalogItems.map(({ id }) => id)).size, 60);
+  assert.equal(new Set(catalogItems.map(({ title }) => title)).size, 60);
 
   for (const category of catalogCategories) {
     assert.equal(
@@ -24,7 +25,13 @@ test("catalog contains 50 unique services split evenly across five categories", 
 test("catalog uses the approved filter label and service names", () => {
   assert.equal(catalogCategories[0].filterLabel, "Konstruksi");
   assert.ok(
+    catalogCategories.some(({ label }) => label === "Plafon & Partisi"),
+  );
+  assert.ok(
     catalogItems.some(({ title }) => title === "Pekerjaan Pondasi dan Cor"),
+  );
+  assert.ok(
+    catalogItems.some(({ title }) => title === "Partisi Kalsiboard"),
   );
 });
 
