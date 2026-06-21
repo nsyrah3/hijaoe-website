@@ -16,22 +16,15 @@ const SKIP_WORDS = new Set([
   "tidak tahu",
 ]);
 
-const CORRECTION_FIELDS = new Map([
-  ["nama", "name"],
-  ["pekerjaan", "service"],
-  ["lokasi", "location"],
-  ["ukuran", "dimensions"],
+const CORRECTION_FIELD_ALIASES = new Map([
   ["bahan", "material"],
-  ["target waktu", "targetTime"],
-  ["email", "email"],
-  ["izin email promosi", "emailMarketingConsent"],
+  ["model", "material"],
+  ["foto", "photoReferences"],
+  ["referensi", "photoReferences"],
 ]);
 
-const REQUIRED_CORRECTION_FIELDS = new Map([
-  ["name", "nama"],
-  ["service", "pekerjaan"],
-  ["location", "lokasi"],
-]);
+const FIELD_BY_KEY = new Map(FIELD_DEFINITIONS.map((field) => [field.key, field]));
+const CORRECTION_FIELDS = buildCorrectionFields();
 
 const CONFIRMATION_WORDS = new Set(["ya", "iya", "sudah benar", "benar"]);
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -108,15 +101,15 @@ export function buildSummary(session) {
 
   return [
     "Ringkasan kebutuhan awal:",
-    `Nama: ${data.name}`,
-    `Pekerjaan: ${data.service}`,
-    `Lokasi: ${data.location}`,
-    `Ukuran: ${data.dimensions}`,
-    `Bahan atau model: ${data.material}`,
-    `Target waktu: ${data.targetTime}`,
-    `Foto referensi: ${data.photoReferences}`,
-    `Email: ${data.email}`,
-    `Izin email promosi: ${data.emailMarketingConsent}`,
+    `Nama: ${summaryValue(data.name)}`,
+    `Pekerjaan: ${summaryValue(data.service)}`,
+    `Lokasi: ${summaryValue(data.location)}`,
+    `Ukuran: ${summaryValue(data.dimensions)}`,
+    `Bahan atau model: ${summaryValue(data.material)}`,
+    `Target waktu: ${summaryValue(data.targetTime)}`,
+    `Foto referensi: ${summaryValue(data.photoReferences)}`,
+    `Email: ${summaryValue(data.email)}`,
+    `Izin email promosi: ${summaryValue(data.emailMarketingConsent)}`,
     "",
     "Kalau sudah benar, balas ya. Kalau ada yang perlu diubah, tulis ubah field: nilai.",
   ].join("\n");
@@ -306,10 +299,21 @@ function handleConfirmation(session, answer, rawAnswer) {
     }
 
     if (
-      REQUIRED_CORRECTION_FIELDS.has(correction.key) &&
+      correction.key === "emailMarketingConsent" &&
+      correction.value === "Ya" &&
+      !session.data.email.trim()
+    ) {
+      return invalidResult(
+        session,
+        "Maaf, izin email promosi bisa diaktifkan setelah email diisi. Bisa ubah email dulu, Kak?",
+      );
+    }
+
+    if (
+      isRequiredCorrectionField(correction.key) &&
       SKIP_WORDS.has(normalize(correction.value))
     ) {
-      const fieldLabel = REQUIRED_CORRECTION_FIELDS.get(correction.key);
+      const fieldLabel = FIELD_BY_KEY.get(correction.key).label.toLowerCase();
 
       return invalidResult(
         session,
@@ -317,12 +321,18 @@ function handleConfirmation(session, answer, rawAnswer) {
       );
     }
 
+    const value =
+      isOptionalTextCorrectionField(correction.key) &&
+      SKIP_WORDS.has(normalize(correction.value))
+        ? ""
+        : correction.value;
+
     const nextSession = {
       ...session,
       failedUnderstanding: 0,
       data: {
         ...session.data,
-        [correction.key]: correction.value,
+        [correction.key]: value,
       },
     };
 
@@ -334,6 +344,13 @@ function handleConfirmation(session, answer, rawAnswer) {
   }
 
   return misunderstanding(session);
+}
+
+function buildCorrectionFields() {
+  return new Map([
+    ...FIELD_DEFINITIONS.map((field) => [normalize(field.label), field.key]),
+    ...CORRECTION_FIELD_ALIASES,
+  ]);
 }
 
 function invalidResult(session, message) {
@@ -368,6 +385,15 @@ function parseCorrection(answer) {
   }
 
   return { key, value };
+}
+
+function isRequiredCorrectionField(key) {
+  return FIELD_BY_KEY.get(key)?.required === true;
+}
+
+function isOptionalTextCorrectionField(key) {
+  const field = FIELD_BY_KEY.get(key);
+  return field && !field.required && key !== "emailMarketingConsent";
 }
 
 function parseYesNo(answer) {
@@ -410,6 +436,10 @@ function misunderstanding(session) {
     messages: ["Maaf, saya belum memahami. Bisa ditulis ulang, Kak?"],
     lead: null,
   };
+}
+
+function summaryValue(value) {
+  return value || "Belum ada";
 }
 
 function normalize(value) {

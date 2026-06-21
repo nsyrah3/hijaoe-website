@@ -237,6 +237,81 @@ test("confirmation email correction can clear email consent", () => {
   assert.match(result.messages[0], /Izin email promosi: Tidak/);
 });
 
+test("confirmation correction accepts displayed optional labels", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+    },
+  };
+
+  const materialResult = handleMessage(
+    session,
+    "ubah bahan atau model: Kayu jati",
+  );
+
+  assert.equal(materialResult.session.state, "confirmation");
+  assert.equal(materialResult.session.data.material, "Kayu jati");
+  assert.equal(materialResult.lead, null);
+
+  const photoResult = handleMessage(
+    materialResult.session,
+    "ubah foto referensi: foto contoh",
+  );
+
+  assert.equal(photoResult.session.state, "confirmation");
+  assert.equal(photoResult.session.data.photoReferences, "foto contoh");
+  assert.equal(photoResult.lead, null);
+});
+
+test("confirmation correction can clear optional fields", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+      material: "Kayu",
+    },
+  };
+
+  const result = handleMessage(session, "ubah bahan: lewati");
+
+  assert.equal(result.session.state, "confirmation");
+  assert.equal(result.session.data.material, "");
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /Bahan atau model: Belum ada/);
+});
+
+test("email marketing consent cannot be enabled without email", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+      email: "",
+      emailMarketingConsent: "Tidak",
+    },
+  };
+
+  const result = handleMessage(session, "ubah izin email promosi: ya");
+
+  assert.equal(result.session.state, "confirmation");
+  assert.equal(result.session.data.emailMarketingConsent, "Tidak");
+  assert.equal(result.session.failedUnderstanding, 1);
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /email/i);
+});
+
 test("buildLead uses a stable Stage 2 field shape", () => {
   const session = {
     ...createSession("628123456789"),
