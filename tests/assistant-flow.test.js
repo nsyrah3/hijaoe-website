@@ -7,10 +7,12 @@ import {
 
 test("assistant opening creates a fresh session and asks for the name", () => {
   const session = createSession("628123456789");
+  const defaultSession = createSession();
   const result = startConversation(session);
 
   assert.equal(session.state, "welcome");
   assert.equal(session.whatsappNumber, "628123456789");
+  assert.equal(defaultSession.whatsappNumber, "");
   assert.deepEqual(session.data, {
     name: "",
     service: "",

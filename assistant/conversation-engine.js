@@ -4,7 +4,7 @@ import {
   OPENING_MESSAGE,
 } from "./assistant-data.js";
 
-export function createSession(whatsappNumber) {
+export function createSession(whatsappNumber = "") {
   return {
     state: "welcome",
     whatsappNumber,
