@@ -54,6 +54,19 @@ test("price questions are handed to a human without an estimate", () => {
   assert.doesNotMatch(result.messages[0], /Rp|rupiah|juta|ribu/i);
 });
 
+test("price questions still hand off while collecting target time", () => {
+  const result = handleMessage(
+    sessionAt("target_time"),
+    "Berapa harga pagar ini?",
+  );
+
+  assert.equal(result.session.state, "handoff");
+  assert.equal(result.session.handoffReason, "Pelanggan menanyakan harga");
+  assert.equal(result.session.data.targetTime, "");
+  assert.equal(result.lead, null);
+  assert.doesNotMatch(result.messages[0], /Rp|rupiah|juta|ribu/i);
+});
+
 test("schedule guarantees are handed to a human", () => {
   const result = handleMessage(
     sessionAt("material"),
@@ -64,9 +77,23 @@ test("schedule guarantees are handed to a human", () => {
   assert.equal(result.session.handoffReason, "Pelanggan meminta kepastian jadwal");
 });
 
-test("a target-time answer is collected instead of treated as a guarantee", () => {
-  const result = handleMessage(sessionAt("target_time"), "Bulan depan");
+test("schedule guarantee wording is collected as target time while collecting target time", () => {
+  const result = handleMessage(
+    sessionAt("target_time"),
+    "Pasti selesai hari Jumat",
+  );
 
-  assert.equal(result.session.data.targetTime, "Bulan depan");
+  assert.equal(result.session.data.targetTime, "Pasti selesai hari Jumat");
   assert.equal(result.session.state, "photo");
+});
+
+test("orangnya alone does not request human handoff", () => {
+  const result = handleMessage(
+    sessionAt("service"),
+    "Pagar untuk orangnya di rumah sebelah",
+  );
+
+  assert.equal(result.session.state, "location");
+  assert.equal(result.session.data.service, "Pagar untuk orangnya di rumah sebelah");
+  assert.equal(result.session.handoffReason, "");
 });

@@ -29,8 +29,12 @@ const FAQ_ENTRIES = [
 const HANDOFF_PATTERNS = [
   /bicara.*admin/i,
   /chat.*admin/i,
-  /orangnya/i,
+  /bicara.*orang/i,
+  /mau.*orang/i,
+  /ingin.*orang/i,
   /manusia/i,
+  /adminnya/i,
+  /\bcs\b/i,
   /hubungkan.*admin/i,
 ];
 
@@ -60,11 +64,15 @@ export function detectHandoffRequest(message) {
   return HANDOFF_PATTERNS.some((pattern) => pattern.test(message));
 }
 
-export function detectRestrictedIntent(message) {
+export function detectPriceIntent(message) {
   if (PRICE_PATTERNS.some((pattern) => pattern.test(message))) {
     return "Pelanggan menanyakan harga";
   }
 
+  return null;
+}
+
+export function detectScheduleGuaranteeIntent(message) {
   if (
     SCHEDULE_GUARANTEE_PATTERNS.some((pattern) => pattern.test(message))
   ) {
@@ -72,4 +80,8 @@ export function detectRestrictedIntent(message) {
   }
 
   return null;
+}
+
+export function detectRestrictedIntent(message) {
+  return detectPriceIntent(message) || detectScheduleGuaranteeIntent(message);
 }

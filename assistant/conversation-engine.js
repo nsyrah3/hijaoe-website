@@ -8,7 +8,8 @@ import {
 } from "./assistant-data.js";
 import {
   detectHandoffRequest,
-  detectRestrictedIntent,
+  detectPriceIntent,
+  detectScheduleGuaranteeIntent,
   findFaq,
 } from "./faq.js";
 
@@ -72,10 +73,15 @@ export function handleMessage(session, message) {
     return handoffResult(session, "Pelanggan meminta admin manusia");
   }
 
+  const priceReason = detectPriceIntent(rawAnswer);
+  if (priceReason) {
+    return handoffResult(session, priceReason);
+  }
+
   if (session.state !== "target_time") {
-    const restrictedReason = detectRestrictedIntent(rawAnswer);
-    if (restrictedReason) {
-      return handoffResult(session, restrictedReason);
+    const scheduleGuaranteeReason = detectScheduleGuaranteeIntent(rawAnswer);
+    if (scheduleGuaranteeReason) {
+      return handoffResult(session, scheduleGuaranteeReason);
     }
   }
 
