@@ -67,3 +67,15 @@ Gambar hero berada di `assets/images/hijaoe-workshop.webp`. Ganti memakai nama y
 - `assets/js/render.js`: renderer komponen
 - `assets/js/main.js`: inisialisasi dan interaksi halaman
 - `tests/`: pengujian data, renderer, helper katalog, dan aset
+
+## Simulator Asisten WhatsApp
+
+Tahap pertama Asisten WhatsApp dapat diuji tanpa akun Meta, DeepSeek, atau Google Sheets:
+
+```powershell
+npm.cmd run assistant:simulate
+```
+
+Simulator memakai alur yang sama dengan integrasi WhatsApp mendatang. Bot mengumpulkan kebutuhan, menjawab FAQ yang telah disetujui, menolak memberi harga atau kepastian jadwal, dan menampilkan data lead setelah pelanggan mengonfirmasi ringkasan.
+
+Kode simulator berada di `assistant/`. Integrasi API eksternal belum aktif pada tahap ini dan tidak ada API key yang disimpan di repository.

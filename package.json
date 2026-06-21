@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "assistant:simulate": "node assistant/simulator.js",
     "serve": "npx --yes serve ."
   },
   "devDependencies": {
