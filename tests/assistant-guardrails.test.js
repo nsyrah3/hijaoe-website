@@ -97,3 +97,14 @@ test("orangnya alone does not request human handoff", () => {
   assert.equal(result.session.data.service, "Pagar untuk orangnya di rumah sebelah");
   assert.equal(result.session.handoffReason, "");
 });
+
+test("service request mentioning orang does not request human handoff", () => {
+  const result = handleMessage(
+    sessionAt("service"),
+    "Saya mau pagar supaya orang tidak masuk",
+  );
+
+  assert.equal(result.session.state, "location");
+  assert.equal(result.session.data.service, "Saya mau pagar supaya orang tidak masuk");
+  assert.equal(result.session.handoffReason, "");
+});

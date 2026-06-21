@@ -27,15 +27,10 @@ const FAQ_ENTRIES = [
 ];
 
 const HANDOFF_PATTERNS = [
-  /bicara.*admin/i,
-  /chat.*admin/i,
-  /bicara.*orang/i,
-  /mau.*orang/i,
-  /ingin.*orang/i,
-  /manusia/i,
+  /\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b.*\b(?:admin|orang|cs|manusia)\b/i,
+  /\b(?:admin|orang|cs|manusia)\b.*\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b/i,
   /adminnya/i,
   /\bcs\b/i,
-  /hubungkan.*admin/i,
 ];
 
 const PRICE_PATTERNS = [
