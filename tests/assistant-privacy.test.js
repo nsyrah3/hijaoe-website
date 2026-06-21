@@ -79,3 +79,39 @@ test("model context excludes stored identity and location fields", () => {
   assert.equal(context.service, "Pagar besi");
   assert.equal(context.dimensions, "4 x 2 meter");
 });
+
+for (const [state, message] of [
+  ["name", "Rina"],
+  ["location", "Jalan Mawar 10, Panakkukang"],
+  ["email", "rina@example.com"],
+  ["photo", "https://files.example.com/private/customer-photo-123.jpg"],
+]) {
+  test(`model context omits current-message PII while collecting ${state}`, () => {
+    const base = createSession("628123456789");
+    const context = buildModelContext(
+      {
+        ...base,
+        state,
+        data: {
+          ...base.data,
+          service: "Pagar besi",
+          dimensions: "4 x 2 meter",
+          material: "Besi hollow",
+          targetTime: "Bulan depan",
+        },
+      },
+      message,
+    );
+
+    assert.deepEqual(Object.keys(context), [
+      "state",
+      "message",
+      "service",
+      "dimensions",
+      "material",
+      "targetTime",
+    ]);
+    assert.equal(context.message, "");
+    assert.doesNotMatch(JSON.stringify(context), new RegExp(message.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+  });
+}

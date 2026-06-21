@@ -57,7 +57,7 @@ export function startConversation(session) {
   };
 }
 
-export function handleMessage(session, message) {
+export function handleMessage(session, message, { now = new Date() } = {}) {
   const answer = normalize(message);
   const rawAnswer = String(message ?? "").trim();
 
@@ -65,8 +65,8 @@ export function handleMessage(session, message) {
     return startConversation(session);
   }
 
-  if (session.state === "handoff") {
-    return { session, messages: [HANDOFF_MESSAGE], lead: null };
+  if (session.state === "handoff" || session.state === "closed") {
+    return { session, messages: [], lead: null };
   }
 
   if (detectHandoffRequest(rawAnswer)) {
@@ -103,7 +103,7 @@ export function handleMessage(session, message) {
   }
 
   if (session.state === "confirmation") {
-    return handleConfirmation(session, answer, rawAnswer);
+    return handleConfirmation(session, answer, rawAnswer, now);
   }
 
   if (session.state === "marketing_consent") {
@@ -276,7 +276,7 @@ function handleMarketingConsent(session, answer) {
   };
 }
 
-function handleConfirmation(session, answer, rawAnswer) {
+function handleConfirmation(session, answer, rawAnswer, now) {
   if (CONFIRMATION_WORDS.has(answer)) {
     const nextSession = {
       ...session,
@@ -290,7 +290,7 @@ function handleConfirmation(session, answer, rawAnswer) {
     return {
       session: nextSession,
       messages: [COMPLETION_MESSAGE, HANDOFF_MESSAGE],
-      lead: buildLead(nextSession),
+      lead: buildLead(nextSession, now),
     };
   }
 
@@ -480,7 +480,7 @@ function misunderstanding(session) {
     return {
       session: nextSession,
       messages: [HANDOFF_MESSAGE],
-      lead: buildLead(nextSession),
+      lead: null,
     };
   }
 

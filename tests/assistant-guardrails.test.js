@@ -46,13 +46,36 @@ test("customer can request a human at any state", () => {
   assert.match(result.messages[0], /admin HIJAOE/);
 });
 
-test("price questions are handed to a human without an estimate", () => {
-  const result = handleMessage(sessionAt("location"), "Berapa harga pagar ini?");
+for (const phrase of [
+  "Saya mau bicara sama orangnya",
+  "Tolong hubungkan ke admin",
+]) {
+  test(`human handoff phrase is detected: ${phrase}`, () => {
+    const result = handleMessage(sessionAt("location"), phrase);
 
-  assert.equal(result.session.state, "handoff");
-  assert.equal(result.session.handoffReason, "Pelanggan menanyakan harga");
-  assert.doesNotMatch(result.messages[0], /Rp|rupiah|juta|ribu/i);
-});
+    assert.equal(result.session.state, "handoff");
+    assert.equal(
+      result.session.handoffReason,
+      "Pelanggan meminta admin manusia",
+    );
+    assert.equal(result.lead, null);
+  });
+}
+
+for (const phrase of [
+  "Berapa harga pagar ini?",
+  "Berapa biayanya?",
+  "Kisaran harganya?",
+]) {
+  test(`price question hands off without an estimate: ${phrase}`, () => {
+    const result = handleMessage(sessionAt("location"), phrase);
+
+    assert.equal(result.session.state, "handoff");
+    assert.equal(result.session.handoffReason, "Pelanggan menanyakan harga");
+    assert.equal(result.lead, null);
+    assert.doesNotMatch(result.messages[0], /Rp|rupiah|juta|ribu/i);
+  });
+}
 
 test("price questions still hand off while collecting target time", () => {
   const result = handleMessage(
@@ -108,3 +131,18 @@ test("service request mentioning orang does not request human handoff", () => {
   assert.equal(result.session.data.service, "Saya mau pagar supaya orang tidak masuk");
   assert.equal(result.session.handoffReason, "");
 });
+
+for (const state of ["handoff", "closed"]) {
+  test(`${state} session stays silent and unchanged`, () => {
+    const session = {
+      ...sessionAt(state),
+      handoffReason: "Sudah dialihkan",
+    };
+
+    const result = handleMessage(session, "Halo?");
+
+    assert.strictEqual(result.session, session);
+    assert.deepEqual(result.messages, []);
+    assert.equal(result.lead, null);
+  });
+}

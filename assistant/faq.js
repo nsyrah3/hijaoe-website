@@ -29,6 +29,7 @@ const FAQ_ENTRIES = [
 const HANDOFF_PATTERNS = [
   /\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b.*\b(?:admin|orang|cs|manusia)\b/i,
   /\b(?:admin|orang|cs|manusia)\b.*\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b/i,
+  /\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b.*\borangnya\b/i,
   /adminnya/i,
   /\bcs\b/i,
 ];
@@ -36,6 +37,8 @@ const HANDOFF_PATTERNS = [
 const PRICE_PATTERNS = [
   /berapa.*harga/i,
   /harga.*berapa/i,
+  /berapa.*biaya/i,
+  /kisaran.*harga/i,
   /perkiraan.*biaya/i,
   /ongkos.*berapa/i,
 ];

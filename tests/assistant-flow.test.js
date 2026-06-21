@@ -83,6 +83,24 @@ test("assistant collects a complete brief and creates one lead", () => {
   assert.equal(result.lead.status, "Baru");
 });
 
+test("confirmation uses the injected timestamp when creating a lead", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+    },
+  };
+  const now = new Date("2026-06-21T09:30:00.000Z");
+
+  const result = handleMessage(session, "ya", { now });
+
+  assert.equal(result.lead.created_at, "2026-06-21T09:30:00.000Z");
+});
+
 test("optional email can be skipped without marketing consent", () => {
   const session = {
     ...createSession("628123456789"),
@@ -310,6 +328,23 @@ test("email marketing consent cannot be enabled without email", () => {
   assert.equal(result.session.failedUnderstanding, 1);
   assert.equal(result.lead, null);
   assert.match(result.messages[0], /email/i);
+});
+
+test("two misunderstandings hand off without creating an incomplete lead", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "name",
+  };
+
+  const firstResult = handleMessage(session, "");
+  const secondResult = handleMessage(firstResult.session, "");
+
+  assert.equal(secondResult.session.state, "handoff");
+  assert.equal(
+    secondResult.session.handoffReason,
+    "Bot tidak memahami dua jawaban berturut-turut",
+  );
+  assert.equal(secondResult.lead, null);
 });
 
 test("buildLead uses a stable Stage 2 field shape", () => {
