@@ -27,6 +27,12 @@ const CORRECTION_FIELDS = new Map([
   ["izin email promosi", "emailMarketingConsent"],
 ]);
 
+const REQUIRED_CORRECTION_FIELDS = new Map([
+  ["name", "nama"],
+  ["service", "pekerjaan"],
+  ["location", "lokasi"],
+]);
+
 const CONFIRMATION_WORDS = new Set(["ya", "iya", "sudah benar", "benar"]);
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -283,18 +289,32 @@ function handleConfirmation(session, answer, rawAnswer) {
 
       const nextSession = {
         ...session,
+        state: "marketing_consent",
         failedUnderstanding: 0,
         data: {
           ...session.data,
           email,
+          emailMarketingConsent: "Tidak",
         },
       };
 
       return {
         session: nextSession,
-        messages: [buildSummary(nextSession)],
+        messages: [FIELD_BY_STATE.get("marketing_consent").prompt],
         lead: null,
       };
+    }
+
+    if (
+      REQUIRED_CORRECTION_FIELDS.has(correction.key) &&
+      SKIP_WORDS.has(normalize(correction.value))
+    ) {
+      const fieldLabel = REQUIRED_CORRECTION_FIELDS.get(correction.key);
+
+      return invalidResult(
+        session,
+        `Maaf, ${fieldLabel} wajib diisi dan tidak bisa dilewati. Bisa tulis koreksi ${fieldLabel} yang benar, Kak?`,
+      );
     }
 
     const nextSession = {

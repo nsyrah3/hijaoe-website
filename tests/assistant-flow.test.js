@@ -121,6 +121,27 @@ test("customer can correct a field before confirmation", () => {
   assert.match(result.messages[0], /Gowa/);
 });
 
+test("confirmation correction cannot skip a required field", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+    },
+  };
+
+  const result = handleMessage(session, "ubah lokasi: lewati");
+
+  assert.equal(result.session.state, "confirmation");
+  assert.equal(result.session.data.location, "Panakkukang");
+  assert.equal(result.session.failedUnderstanding, 1);
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /lokasi|field|ubah|koreksi/i);
+});
+
 test("customer can revoke email marketing consent before confirmation", () => {
   const session = {
     ...createSession("628123456789"),
@@ -163,6 +184,32 @@ test("confirmation email correction rejects invalid email", () => {
   assert.equal(result.session.failedUnderstanding, 1);
   assert.equal(result.lead, null);
   assert.match(result.messages[0], /format email/i);
+});
+
+test("confirmation email correction asks marketing consent for a new email", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+      email: "",
+      emailMarketingConsent: "Tidak",
+    },
+  };
+
+  const result = handleMessage(session, "ubah email: rina@example.com");
+
+  assert.equal(result.session.state, "marketing_consent");
+  assert.equal(result.session.data.email, "rina@example.com");
+  assert.equal(result.session.failedUnderstanding, 0);
+  assert.equal(result.lead, null);
+  assert.equal(
+    result.messages[0],
+    "Apakah Kakak bersedia menerima informasi dan penawaran HIJAOE melalui email? Jawab ya atau tidak.",
+  );
 });
 
 test("confirmation email correction can clear email consent", () => {
