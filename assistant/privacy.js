@@ -33,6 +33,17 @@ export function sanitizeTextForModel(value) {
 }
 
 export function buildModelContext(session, currentMessage) {
+  if (session.state === "confirmation") {
+    return {
+      state: session.state,
+      message: "",
+      service: "",
+      dimensions: "",
+      material: "",
+      targetTime: "",
+    };
+  }
+
   return {
     state: session.state,
     message: SENSITIVE_MESSAGE_STATES.has(session.state)

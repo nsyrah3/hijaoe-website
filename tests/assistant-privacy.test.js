@@ -120,3 +120,49 @@ for (const [state, message] of [
     assert.doesNotMatch(JSON.stringify(context), new RegExp(message.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
   });
 }
+
+test("confirmation model context omits all free-text project fields", () => {
+  const base = createSession("628123456789");
+  const privateValues = {
+    service: "Pesanan untuk Rina Pribadi",
+    dimensions: "Alamat Jalan Mawar 10",
+    material: "Referensi https://files.example.com/private/material.jpg",
+    targetTime: "Hubungi Andi Rahasia",
+  };
+  const context = buildModelContext(
+    {
+      ...base,
+      state: "confirmation",
+      data: {
+        ...base.data,
+        ...privateValues,
+      },
+    },
+    "ubah lokasi: Jalan Melati 20",
+  );
+  const serialized = JSON.stringify(context);
+
+  assert.deepEqual(Object.keys(context), [
+    "state",
+    "message",
+    "service",
+    "dimensions",
+    "material",
+    "targetTime",
+  ]);
+  assert.deepEqual(context, {
+    state: "confirmation",
+    message: "",
+    service: "",
+    dimensions: "",
+    material: "",
+    targetTime: "",
+  });
+
+  for (const value of Object.values(privateValues)) {
+    assert.doesNotMatch(
+      serialized,
+      new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
+    );
+  }
+});

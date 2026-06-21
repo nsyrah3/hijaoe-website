@@ -47,8 +47,12 @@ test("customer can request a human at any state", () => {
 });
 
 for (const phrase of [
+  "Saya mau admin",
+  "Saya mau bicara dengan admin",
   "Saya mau bicara sama orangnya",
   "Tolong hubungkan ke admin",
+  "Saya ingin bicara dengan CS",
+  "Saya ingin bicara langsung dengan manusia",
 ]) {
   test(`human handoff phrase is detected: ${phrase}`, () => {
     const result = handleMessage(sessionAt("location"), phrase);
@@ -59,6 +63,20 @@ for (const phrase of [
       "Pelanggan meminta admin manusia",
     );
     assert.equal(result.lead, null);
+  });
+}
+
+for (const phrase of [
+  "Saya bicara soal pagar agar manusia tidak masuk",
+  "Pagar untuk orangnya di rumah sebelah",
+  "Saya mau pagar supaya orang tidak masuk",
+]) {
+  test(`descriptive human wording is not a handoff request: ${phrase}`, () => {
+    const result = handleMessage(sessionAt("service"), phrase);
+
+    assert.equal(result.session.state, "location");
+    assert.equal(result.session.data.service, phrase);
+    assert.equal(result.session.handoffReason, "");
   });
 }
 

@@ -27,11 +27,12 @@ const FAQ_ENTRIES = [
 ];
 
 const HANDOFF_PATTERNS = [
-  /\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b.*\b(?:admin|cs|manusia)\b/i,
-  /\b(?:admin|cs|manusia)\b.*\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b/i,
-  /\b(?:bicara|chat|hubungkan|kontak|sambungkan)\b.*\borangnya\b/i,
-  /adminnya/i,
-  /\bcs\b/i,
+  /\b(?:saya\s+)?(?:mau|ingin|pengen|pengin|perlu)\s+(?:ke\s+)?(?:admin(?:nya)?|cs)\b/i,
+  /\b(?:saya\s+)?(?:mau|ingin|pengen|pengin|perlu)\s+(?:bicara|chat|ngobrol|kontak)(?:\s+langsung)?\s+(?:dengan|sama|ke)\s+(?:admin(?:nya)?|cs|manusia|orangnya|orang)\b/i,
+  /\b(?:tolong\s+)?(?:hubungkan|sambungkan|kontak)\s+(?:saya\s+)?(?:dengan|sama|ke)\s+(?:admin(?:nya)?|cs|manusia|orangnya|orang)\b/i,
+  /\b(?:bicara|chat|ngobrol)\s+(?:langsung\s+)?(?:dengan|sama|ke)\s+(?:admin(?:nya)?|cs|manusia|orangnya|orang)\b/i,
+  /\b(?:minta|panggil)\s+(?:admin(?:nya)?|cs)\b/i,
+  /\b(?:admin(?:nya)?|cs)\s+(?:dong|tolong)\b/i,
 ];
 
 const PRICE_PATTERNS = [
