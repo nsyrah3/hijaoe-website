@@ -6,6 +6,11 @@ import {
   HANDOFF_MESSAGE,
   OPENING_MESSAGE,
 } from "./assistant-data.js";
+import {
+  detectHandoffRequest,
+  detectRestrictedIntent,
+  findFaq,
+} from "./faq.js";
 
 const SKIP_WORDS = new Set([
   "lewati",
@@ -53,13 +58,46 @@ export function startConversation(session) {
 
 export function handleMessage(session, message) {
   const answer = normalize(message);
+  const rawAnswer = String(message ?? "").trim();
 
-  if (session.state === "confirmation") {
-    return handleConfirmation(session, answer, message.trim());
+  if (session.state === "welcome") {
+    return startConversation(session);
   }
 
   if (session.state === "handoff") {
     return { session, messages: [HANDOFF_MESSAGE], lead: null };
+  }
+
+  if (detectHandoffRequest(rawAnswer)) {
+    return handoffResult(session, "Pelanggan meminta admin manusia");
+  }
+
+  if (session.state !== "target_time") {
+    const restrictedReason = detectRestrictedIntent(rawAnswer);
+    if (restrictedReason) {
+      return handoffResult(session, restrictedReason);
+    }
+  }
+
+  const faq = findFaq(rawAnswer);
+  if (faq && session.state === "confirmation") {
+    return {
+      session,
+      messages: [faq.answer, buildSummary(session)],
+      lead: null,
+    };
+  }
+
+  if (faq && FIELD_BY_STATE.has(session.state)) {
+    return {
+      session,
+      messages: [faq.answer, FIELD_BY_STATE.get(session.state).prompt],
+      lead: null,
+    };
+  }
+
+  if (session.state === "confirmation") {
+    return handleConfirmation(session, answer, rawAnswer);
   }
 
   if (session.state === "marketing_consent") {
@@ -83,7 +121,7 @@ export function handleMessage(session, message) {
     return invalidResult(session, field.prompt);
   }
 
-  const value = SKIP_WORDS.has(answer) ? "" : message.trim();
+  const value = SKIP_WORDS.has(answer) ? "" : rawAnswer;
   const nextSession = {
     ...session,
     data: {
@@ -365,6 +403,18 @@ function invalidResult(session, message) {
   };
 }
 
+function handoffResult(session, reason) {
+  return {
+    session: {
+      ...session,
+      state: "handoff",
+      handoffReason: reason,
+    },
+    messages: [HANDOFF_MESSAGE],
+    lead: null,
+  };
+}
+
 function parseCorrection(answer) {
   const match = answer.match(/^ubah\s+([^:]+):\s*(.+)$/i);
   if (!match) {
@@ -443,5 +493,7 @@ function summaryValue(value) {
 }
 
 function normalize(value) {
-  return value.trim().toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
