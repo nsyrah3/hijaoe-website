@@ -40,6 +40,20 @@ test("assistant opening creates a fresh session and asks for the name", () => {
   assert.equal(result.lead, null);
 });
 
+test("required field cannot be skipped", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "name",
+  };
+
+  const result = handleMessage(session, "lewati");
+
+  assert.equal(result.session.state, "name");
+  assert.equal(result.session.data.name, "");
+  assert.equal(result.session.failedUnderstanding, 1);
+  assert.equal(result.lead, null);
+});
+
 test("assistant collects a complete brief and creates one lead", () => {
   let session = startConversation(createSession("628123456789")).session;
 
@@ -125,6 +139,54 @@ test("customer can revoke email marketing consent before confirmation", () => {
 
   assert.equal(result.session.state, "confirmation");
   assert.equal(result.session.data.emailMarketingConsent, "Tidak");
+  assert.match(result.messages[0], /Izin email promosi: Tidak/);
+});
+
+test("confirmation email correction rejects invalid email", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+      email: "rina@example.com",
+      emailMarketingConsent: "Ya",
+    },
+  };
+
+  const result = handleMessage(session, "ubah email: salah");
+
+  assert.equal(result.session.state, "confirmation");
+  assert.equal(result.session.data.email, "rina@example.com");
+  assert.equal(result.session.failedUnderstanding, 1);
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /format email/i);
+});
+
+test("confirmation email correction can clear email consent", () => {
+  const session = {
+    ...createSession("628123456789"),
+    state: "confirmation",
+    data: {
+      ...createSession().data,
+      name: "Rina",
+      service: "Pagar geser besi",
+      location: "Panakkukang",
+      email: "rina@example.com",
+      emailMarketingConsent: "Ya",
+    },
+  };
+
+  const result = handleMessage(session, "ubah email: lewati");
+
+  assert.equal(result.session.state, "confirmation");
+  assert.equal(result.session.data.email, "");
+  assert.equal(result.session.data.emailMarketingConsent, "Tidak");
+  assert.equal(result.session.failedUnderstanding, 0);
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /Email: /);
   assert.match(result.messages[0], /Izin email promosi: Tidak/);
 });
 

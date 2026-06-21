@@ -80,6 +80,10 @@ export function handleMessage(session, message) {
     return misunderstanding(session);
   }
 
+  if (SKIP_WORDS.has(answer) && field.required) {
+    return invalidResult(session, field.prompt);
+  }
+
   const value = SKIP_WORDS.has(answer) ? "" : message.trim();
   const nextSession = {
     ...session,
@@ -249,6 +253,50 @@ function handleConfirmation(session, answer, rawAnswer) {
 
   const correction = parseCorrection(rawAnswer);
   if (correction) {
+    if (correction.key === "email") {
+      const email = normalize(correction.value);
+
+      if (SKIP_WORDS.has(email)) {
+        const nextSession = {
+          ...session,
+          failedUnderstanding: 0,
+          data: {
+            ...session.data,
+            email: "",
+            emailMarketingConsent: "Tidak",
+          },
+        };
+
+        return {
+          session: nextSession,
+          messages: [buildSummary(nextSession)],
+          lead: null,
+        };
+      }
+
+      if (!EMAIL_PATTERN.test(email)) {
+        return invalidResult(
+          session,
+          "Maaf, format email belum sesuai. Bisa tulis email yang benar, Kak?",
+        );
+      }
+
+      const nextSession = {
+        ...session,
+        failedUnderstanding: 0,
+        data: {
+          ...session.data,
+          email,
+        },
+      };
+
+      return {
+        session: nextSession,
+        messages: [buildSummary(nextSession)],
+        lead: null,
+      };
+    }
+
     const nextSession = {
       ...session,
       failedUnderstanding: 0,
@@ -266,6 +314,18 @@ function handleConfirmation(session, answer, rawAnswer) {
   }
 
   return misunderstanding(session);
+}
+
+function invalidResult(session, message) {
+  const result = misunderstanding(session);
+  if (result.session.state === "handoff") {
+    return result;
+  }
+
+  return {
+    ...result,
+    messages: [message],
+  };
 }
 
 function parseCorrection(answer) {
