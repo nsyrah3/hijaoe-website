@@ -66,6 +66,8 @@ for (const phrase of [
   "Berapa harga pagar ini?",
   "Berapa biayanya?",
   "Kisaran harganya?",
+  "Biayanya berapa?",
+  "Kisaran biaya berapa?",
 ]) {
   test(`price question hands off without an estimate: ${phrase}`, () => {
     const result = handleMessage(sessionAt("location"), phrase);
@@ -129,6 +131,20 @@ test("service request mentioning orang does not request human handoff", () => {
 
   assert.equal(result.session.state, "location");
   assert.equal(result.session.data.service, "Saya mau pagar supaya orang tidak masuk");
+  assert.equal(result.session.handoffReason, "");
+});
+
+test("ordinary conversation mentioning bicara and orang does not request human handoff", () => {
+  const result = handleMessage(
+    sessionAt("service"),
+    "Saya mau bicara soal pagar agar orang tidak masuk",
+  );
+
+  assert.equal(result.session.state, "location");
+  assert.equal(
+    result.session.data.service,
+    "Saya mau bicara soal pagar agar orang tidak masuk",
+  );
   assert.equal(result.session.handoffReason, "");
 });
 

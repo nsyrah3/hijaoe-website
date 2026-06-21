@@ -85,6 +85,11 @@ for (const [state, message] of [
   ["location", "Jalan Mawar 10, Panakkukang"],
   ["email", "rina@example.com"],
   ["photo", "https://files.example.com/private/customer-photo-123.jpg"],
+  ["confirmation", "ubah lokasi: Jalan Mawar 10, Panakkukang"],
+  [
+    "confirmation",
+    "ubah foto: https://files.example.com/private/customer-photo-123.jpg",
+  ],
 ]) {
   test(`model context omits current-message PII while collecting ${state}`, () => {
     const base = createSession("628123456789");

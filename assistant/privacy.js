@@ -7,6 +7,7 @@ const SENSITIVE_MESSAGE_STATES = new Set([
   "location",
   "email",
   "photo",
+  "confirmation",
 ]);
 
 function redactPhoneCandidate(match) {
