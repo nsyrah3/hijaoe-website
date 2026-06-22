@@ -189,3 +189,59 @@ test("service pages expose discovery and conversion landmarks", async () => {
     assert.match(html, /href="\/galeri"/);
   }
 });
+
+const unsupportedClaimPatterns = [
+  /\bgaransi\b/i,
+  /\bberpengalaman\s+\d+/i,
+  /\b\d+\s+tahun\s+pengalaman\b/i,
+  /\bratusan\s+proyek\b/i,
+  /\btestimoni\b/i,
+  /\bharga\s+mulai\b/i,
+  /\btermurah\b/i,
+  /\bnomor\s+1\b/i,
+  /\bterbaik\s+di\s+Makassar\b/i,
+];
+
+test("SEO pages avoid unsupported business claims", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+    for (const pattern of unsupportedClaimPatterns) {
+      assert.doesNotMatch(html, pattern, `${page.slug}: ${pattern}`);
+    }
+  }
+});
+
+test("SEO pages contain substantive unique visible copy", async () => {
+  const bodies = [];
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/g, " ")
+      .replace(/<style[\s\S]*?<\/style>/g, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replaceAll("&amp;", "&")
+      .replaceAll("&#039;", "'")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    assert.ok(text.length >= 1200, `${page.slug}: ${text.length}`);
+    bodies.push(text);
+  }
+  assert.equal(new Set(bodies).size, seoPages.length);
+});
+
+test("AI service visuals are not presented as completed customer projects", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+    assert.doesNotMatch(html, /hasil proyek|proyek pelanggan|hasil pekerjaan HIJAOE/i);
+  }
+});

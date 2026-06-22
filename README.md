@@ -51,6 +51,33 @@ Tes saat ini mengharuskan 60 layanan dengan 10 item per kategori. Jika jumlah at
 
 Visual katalog yang tersedia saat ini dibuat dengan AI untuk menggambarkan jenis layanan yang dapat dipesan. Visual tersebut bukan dokumentasi proyek pelanggan HIJAOE. Ganti dengan foto asli secara bertahap ketika dokumentasi pekerjaan sudah tersedia.
 
+## SEO Lokal
+
+Domain utama website adalah `https://hijaoe.id`. Halaman layanan di `layanan/`, `sitemap.xml`, dan `robots.txt` dibuat dari data terstruktur di `assets/js/seo-pages-data.js`.
+
+Setelah mengubah judul, deskripsi, isi layanan, FAQ, gambar, atau daftar halaman SEO, jalankan:
+
+```powershell
+npm.cmd run seo:generate
+npm.cmd test
+```
+
+Jangan mengedit file HTML di `layanan/` secara manual karena hasilnya akan ditimpa oleh generator. Setiap halaman wajib memakai teks yang spesifik, tautan internal yang relevan, dan klaim bisnis yang dapat dibuktikan. Harga, garansi, testimoni, jumlah proyek, dan lama pengalaman tidak boleh ditambahkan sebelum datanya dikonfirmasi.
+
+Halaman SEO yang tersedia:
+
+- Enam halaman kategori utama untuk konstruksi, las, aluminium, atap, plafon, serta interior
+- Delapan halaman kebutuhan prioritas seperti kanopi, pagar besi, pintu dan jendela aluminium, kitchen set, plafon, partisi, renovasi, serta meja dan kursi sekolah
+- Halaman utama dan katalog sebagai bagian dari sitemap
+
+Setelah perubahan masuk ke branch produksi dan Cloudflare Pages selesai melakukan deployment:
+
+1. Periksa `https://hijaoe.id/robots.txt` dan `https://hijaoe.id/sitemap.xml`.
+2. Tambahkan properti domain `hijaoe.id` ke Google Search Console.
+3. Kirim sitemap `https://hijaoe.id/sitemap.xml`.
+4. Minta pengindeksan halaman utama dan halaman layanan prioritas melalui pemeriksaan URL.
+5. Tambahkan `https://hijaoe.id` ke Profil Bisnis Google HIJAOE setelah profil terverifikasi.
+
 ## Mengganti Hero
 
 Gambar hero berada di `assets/images/hijaoe-workshop.webp`. Ganti memakai nama yang sama agar tidak perlu mengubah kode. Rekomendasi: WebP lanskap, lebar sekitar 1600 px, dan ukuran kurang dari 350 KB.
@@ -66,7 +93,10 @@ Gambar hero berada di `assets/images/hijaoe-workshop.webp`. Ganti memakai nama y
 - `assets/js/gallery-page.js`: interaksi halaman katalog dan lightbox
 - `assets/js/render.js`: renderer komponen
 - `assets/js/main.js`: inisialisasi dan interaksi halaman
-- `tests/`: pengujian data, renderer, helper katalog, dan aset
+- `assets/js/seo-pages-data.js`: sumber konten halaman layanan SEO
+- `scripts/generate-seo-pages.js`: generator halaman layanan dan berkas perayapan
+- `layanan/`: halaman layanan SEO hasil generator
+- `tests/`: pengujian data, renderer, SEO, helper katalog, dan aset
 
 ## Simulator Asisten WhatsApp
 
