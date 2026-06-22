@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node --test",
     "assistant:simulate": "node assistant/simulator.js",
+    "seo:generate": "node scripts/generate-seo-pages.js",
     "serve": "npx --yes serve ."
   },
   "devDependencies": {

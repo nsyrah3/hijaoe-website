@@ -10,6 +10,10 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+function escapeHtml(value) {
+  return String(value).replaceAll("&", "&amp;");
+}
+
 test("SEO inventory contains six category and eight priority pages", () => {
   assert.equal(seoPages.length, 14);
   assert.equal(seoPages.filter((page) => page.kind === "category").length, 6);
@@ -40,4 +44,72 @@ test("SEO page images exist", async () => {
 
 test("production site URL uses the apex HTTPS domain", () => {
   assert.equal(SITE_URL, "https://hijaoe.id");
+});
+
+test("every SEO page has a generated HTML file", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+
+    assert.match(
+      html,
+      new RegExp(`<h1[^>]*>${escapeHtml(page.heading)}</h1>`),
+    );
+    assert.match(
+      html,
+      new RegExp(
+        `<link rel="canonical" href="${SITE_URL}/layanan/${page.slug}">`,
+      ),
+    );
+  }
+});
+
+test("generated pages contain complete search and social metadata", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+
+    assert.match(
+      html,
+      /<meta name="robots" content="index,follow,max-image-preview:large">/,
+    );
+    assert.match(html, /<meta property="og:type" content="website">/);
+    assert.match(html, /<meta property="og:site_name" content="HIJAOE">/);
+    assert.match(
+      html,
+      /<meta name="twitter:card" content="summary_large_image">/,
+    );
+    assert.equal((html.match(/<h1\b/g) || []).length, 1);
+  }
+});
+
+test("generated service schemas are valid JSON", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+    const blocks = [
+      ...html.matchAll(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+      ),
+    ];
+
+    assert.ok(blocks.length >= 3);
+    blocks.forEach((block) => JSON.parse(block[1]));
+  }
+});
+
+test("generated pages link only to known related services", () => {
+  const slugs = new Set(seoPages.map((page) => page.slug));
+  for (const page of seoPages) {
+    for (const relatedSlug of page.relatedSlugs) {
+      assert.ok(slugs.has(relatedSlug), `${page.slug} -> ${relatedSlug}`);
+      assert.notEqual(relatedSlug, page.slug);
+    }
+  }
 });
