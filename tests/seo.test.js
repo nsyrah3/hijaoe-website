@@ -117,7 +117,7 @@ test("generated pages link only to known related services", () => {
 const canonicalPaths = [
   "/",
   "/galeri",
-  "/kebijakan-privasi.html",
+  "/kebijakan-privasi",
   ...seoPages.map((page) => `/layanan/${page.slug}`),
 ];
 

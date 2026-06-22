@@ -13,7 +13,7 @@ test("privacy policy exposes Meta-ready policy and deletion information", () => 
 
   assert.match(
     html,
-    /<link rel="canonical" href="https:\/\/hijaoe\.id\/kebijakan-privasi\.html">/,
+    /<link rel="canonical" href="https:\/\/hijaoe\.id\/kebijakan-privasi">/,
   );
   assert.match(html, /<h1[^>]*>Kebijakan Privasi HIJAOE<\/h1>/);
 
@@ -35,12 +35,12 @@ test("privacy policy exposes Meta-ready policy and deletion information", () => 
 test("public pages link to the privacy policy", () => {
   for (const filename of ["index.html", "galeri.html"]) {
     const html = readFileSync(new URL(`../${filename}`, import.meta.url), "utf8");
-    assert.match(html, /href="\/kebijakan-privasi\.html"/);
+    assert.match(html, /href="\/kebijakan-privasi"/);
   }
 
   const servicePage = readFileSync(
     new URL("../layanan/kanopi-makassar.html", import.meta.url),
     "utf8",
   );
-  assert.match(servicePage, /href="\/kebijakan-privasi\.html"/);
+  assert.match(servicePage, /href="\/kebijakan-privasi"/);
 });
