@@ -17,7 +17,7 @@ const mainJs = readFileSync(
 
 test("both pages declare the HIJAOE favicon", () => {
   for (const html of [indexHtml, galleryHtml]) {
-    assert.match(html, /rel="icon" href="assets\/images\/favicon\.svg"/);
+    assert.match(html, /rel="icon" href="\/?assets\/images\/favicon\.svg"/);
   }
 });
 

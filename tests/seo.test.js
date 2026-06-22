@@ -113,3 +113,58 @@ test("generated pages link only to known related services", () => {
     }
   }
 });
+
+const canonicalPaths = [
+  "/",
+  "/galeri",
+  ...seoPages.map((page) => `/layanan/${page.slug}`),
+];
+
+test("sitemap contains every canonical URL exactly once", async () => {
+  const sitemap = await readFile(path.join(root, "sitemap.xml"), "utf8");
+  const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(
+    (match) => match[1],
+  );
+
+  assert.deepEqual(
+    urls,
+    canonicalPaths.map((urlPath) =>
+      urlPath === "/" ? SITE_URL : `${SITE_URL}${urlPath}`,
+    ),
+  );
+});
+
+test("robots allows crawling and declares the production sitemap", async () => {
+  const robots = await readFile(path.join(root, "robots.txt"), "utf8");
+  assert.match(robots, /^User-agent: \*\r?\nAllow: \/$/m);
+  assert.match(robots, /Sitemap: https:\/\/hijaoe\.id\/sitemap\.xml/);
+});
+
+test("home and gallery expose production metadata and JSON-LD", async () => {
+  for (const [filename, canonical] of [
+    ["index.html", "https://hijaoe.id"],
+    ["galeri.html", "https://hijaoe.id/galeri"],
+  ]) {
+    const html = await readFile(path.join(root, filename), "utf8");
+    assert.match(
+      html,
+      new RegExp(`<link rel="canonical" href="${canonical}">`),
+    );
+    assert.match(html, /<meta property="og:site_name" content="HIJAOE">/);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
+    const blocks = [
+      ...html.matchAll(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+      ),
+    ];
+    assert.ok(blocks.length >= 1);
+    blocks.forEach((block) => JSON.parse(block[1]));
+  }
+});
+
+test("a root 404 page disables accidental SPA fallback indexing", async () => {
+  const html = await readFile(path.join(root, "404.html"), "utf8");
+  assert.match(html, /<meta name="robots" content="noindex,follow">/);
+  assert.match(html, /Halaman tidak ditemukan/);
+  assert.match(html, /href="\/galeri"/);
+});

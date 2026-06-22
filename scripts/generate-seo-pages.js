@@ -30,6 +30,27 @@ function serviceUrl(slug) {
   return `${SITE_URL}/layanan/${slug}`;
 }
 
+function renderSitemap() {
+  const urls = [
+    SITE_URL,
+    `${SITE_URL}/galeri`,
+    ...seoPages.map((page) => serviceUrl(page.slug)),
+  ];
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    (url) => `  <url>
+    <loc>${url}</loc>
+    <lastmod>2026-06-22</lastmod>
+  </url>`,
+  )
+  .join("\n")}
+</urlset>
+`;
+}
+
 function buildWhatsAppUrl(serviceName) {
   const message =
     `Halo HIJAOE, saya ingin konsultasi tentang ${serviceName}. ` +
@@ -375,3 +396,16 @@ await Promise.all(
     ),
   ),
 );
+
+await Promise.all([
+  writeFile(
+    path.join(root, "robots.txt"),
+    `User-agent: *
+Allow: /
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`,
+    "utf8",
+  ),
+  writeFile(path.join(root, "sitemap.xml"), renderSitemap(), "utf8"),
+]);
