@@ -5,7 +5,7 @@ import {
   serviceAreas,
   services,
   buildWhatsAppUrl,
-} from "./site-data.js";
+} from "./site-data.js?v=20260622-area";
 import {
   renderProcess,
   renderProjectPreview,
