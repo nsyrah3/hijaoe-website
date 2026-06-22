@@ -34,6 +34,7 @@ function renderSitemap() {
   const urls = [
     SITE_URL,
     `${SITE_URL}/galeri`,
+    `${SITE_URL}/kebijakan-privasi.html`,
     ...seoPages.map((page) => serviceUrl(page.slug)),
   ];
 
@@ -364,7 +365,10 @@ function renderPage(page) {
           <span class="brand__mark" aria-hidden="true"></span>
           <span>HIJAOE</span>
         </a>
-        <p>&copy; <span data-year></span> HIJAOE. Konstruksi & bengkel custom Makassar.</p>
+        <div class="site-footer__meta">
+          <a href="/kebijakan-privasi.html">Kebijakan Privasi</a>
+          <p>&copy; <span data-year></span> HIJAOE. Konstruksi & bengkel custom Makassar.</p>
+        </div>
       </div>
     </footer>
 
