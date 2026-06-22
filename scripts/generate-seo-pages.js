@@ -140,10 +140,10 @@ function renderPage(page) {
     description: page.description,
     url: canonical,
     image: absoluteAsset(page.image),
-    areaServed: {
+    areaServed: business.serviceCities.map((city) => ({
       "@type": "City",
-      name: business.city,
-    },
+      name: city,
+    })),
     provider: {
       "@type": ["LocalBusiness", "HomeAndConstructionBusiness"],
       "@id": `${SITE_URL}/#business`,
@@ -305,7 +305,7 @@ function renderPage(page) {
           <div>${renderSections(page.sections)}</div>
           <aside class="service-page__aside">
             <p class="eyebrow eyebrow--dark">Area layanan</p>
-            <h2>Makassar dan sekitarnya</h2>
+            <h2>${escapeHtml(business.serviceAreaTitle)}</h2>
             <p>${escapeHtml(business.serviceArea)}</p>
             <a href="${business.mapUrl}" target="_blank" rel="noreferrer">
               Lihat lokasi HIJAOE

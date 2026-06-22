@@ -10,7 +10,7 @@ export const seoPages = [
     heading: "Jasa Konstruksi & Renovasi Makassar",
     eyebrow: "Konstruksi & renovasi",
     intro:
-      "HIJAOE menangani kebutuhan konstruksi dan renovasi untuk rumah, toko, sekolah, serta tempat usaha di Makassar dan sekitarnya. Lingkup pekerjaan dibicarakan berdasarkan kondisi bangunan, ukuran, material, lokasi, dan hasil yang ingin dicapai.",
+      "HIJAOE menangani kebutuhan konstruksi dan renovasi untuk rumah, toko, sekolah, serta tempat usaha di Makassar, Gowa, Maros, dan sekitarnya. Lingkup pekerjaan dibicarakan berdasarkan kondisi bangunan, ukuran, material, lokasi, dan hasil yang ingin dicapai.",
     image: "assets/images/project-construction.webp",
     imageAlt: "Bangunan rumah untuk kebutuhan konstruksi dan renovasi",
     sections: [

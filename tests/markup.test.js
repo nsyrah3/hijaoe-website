@@ -61,10 +61,10 @@ test("catalog load-more feedback is exposed as a polite live status", () => {
   assert.match(statusTag, /\bclass="visually-hidden"/);
 });
 
-test("homepage static copy keeps service area to Makassar and nearby areas", () => {
+test("homepage static copy keeps service area to Makassar, Gowa, Maros, and nearby areas", () => {
   assert.doesNotMatch(indexHtml, /Sulawesi Selatan|Bulukumba|Palopo/i);
-  assert.match(indexHtml, /Makassar dan sekitarnya/i);
-  assert.match(indexHtml, /Makassar & Sekitarnya/);
+  assert.match(indexHtml, /Makassar, Gowa, Maros, dan sekitarnya/i);
+  assert.match(indexHtml, /Makassar · Gowa · Maros/);
 });
 
 test("homepage mobile menu restores focus after Escape closes it", () => {

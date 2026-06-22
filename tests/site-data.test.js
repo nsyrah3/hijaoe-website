@@ -35,10 +35,16 @@ test("service groups cover the six confirmed categories", () => {
   );
 });
 
-test("service area stays general to Makassar and nearby areas", () => {
-  assert.equal(business.serviceAreaTitle, "Melayani Makassar dan sekitarnya.");
-  assert.equal(serviceAreas.length, 1);
-  assert.equal(serviceAreas[0].city, "Makassar & Sekitarnya");
+test("service area covers Makassar, Gowa, Maros, and nearby areas", () => {
+  assert.equal(
+    business.serviceAreaTitle,
+    "Melayani Makassar, Gowa, Maros, dan sekitarnya.",
+  );
+  assert.deepEqual(business.serviceCities, ["Makassar", "Gowa", "Maros"]);
+  assert.deepEqual(
+    serviceAreas.map((area) => area.city),
+    ["Makassar", "Gowa", "Maros"],
+  );
   assert.doesNotMatch(
     `${business.serviceArea} ${JSON.stringify(serviceAreas)}`,
     /Bulukumba|Palopo/,
