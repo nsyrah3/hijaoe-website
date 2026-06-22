@@ -62,3 +62,28 @@ test("services use continuous card dividers", () => {
     /\.services-grid\s*\{[^}]*border-left:\s*1px solid var\(--border-light\);[^}]*\}[\s\S]*?\.service-item\s*\{[^}]*border-bottom:\s*1px solid var\(--border-light\);/,
   );
 });
+
+test("service landing pages have stable responsive layout rules", () => {
+  assert.match(
+    styles,
+    /\.service-page__hero-grid\s*\{[^}]*grid-template-columns:/s,
+  );
+  assert.match(
+    styles,
+    /\.service-page__hero-grid img\s*\{[^}]*aspect-ratio:\s*3\s*\/\s*2;/s,
+  );
+  assert.match(
+    styles,
+    /\.service-page__grid\s*\{[^}]*grid-template-columns:/s,
+  );
+  assert.match(styles, /\.service-related__grid\s*\{/);
+  assert.match(
+    styles,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-page__hero-grid\s*\{[^}]*grid-template-columns:\s*1fr;/,
+  );
+});
+
+test("error page and service directory have dedicated layout rules", () => {
+  assert.match(styles, /\.error-page__main\s*\{/);
+  assert.match(styles, /\.service-directory\s*\{/);
+});

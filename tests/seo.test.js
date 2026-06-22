@@ -168,3 +168,24 @@ test("a root 404 page disables accidental SPA fallback indexing", async () => {
   assert.match(html, /Halaman tidak ditemukan/);
   assert.match(html, /href="\/galeri"/);
 });
+
+test("home page links directly to all category hubs", async () => {
+  const html = await readFile(path.join(root, "index.html"), "utf8");
+  for (const page of seoPages.filter((entry) => entry.kind === "category")) {
+    assert.match(html, new RegExp(`href="/layanan/${page.slug}"`));
+  }
+});
+
+test("service pages expose discovery and conversion landmarks", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+    assert.match(html, /aria-label="Breadcrumb"/);
+    assert.match(html, /class="service-page__faq"/);
+    assert.match(html, /class="section service-related"/);
+    assert.match(html, /https:\/\/wa\.me\/628976010103/);
+    assert.match(html, /href="\/galeri"/);
+  }
+});
