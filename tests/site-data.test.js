@@ -45,6 +45,10 @@ test("service area covers Makassar, Gowa, Maros, and nearby areas", () => {
     serviceAreas.map((area) => area.city),
     ["Makassar", "Gowa", "Maros"],
   );
+  assert.match(
+    business.serviceArea,
+    /Pengiriman barang atau pengerjaan luar area dapat dibicarakan/i,
+  );
   assert.doesNotMatch(
     `${business.serviceArea} ${JSON.stringify(serviceAreas)}`,
     /Bulukumba|Palopo/,
