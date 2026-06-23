@@ -9,7 +9,7 @@ import {
 import { analyzeCustomerMessage } from "./deepseek-adapter.js";
 
 export async function runSimulator({
-  whatsappNumber = "628976010103",
+  whatsappNumber = "6285121508159",
   ask,
   write,
   useDeepSeek = false,

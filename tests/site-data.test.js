@@ -15,7 +15,8 @@ import {
 
 test("business data contains the confirmed HIJAOE details", () => {
   assert.equal(business.name, "HIJAOE");
-  assert.equal(business.phoneDisplay, "0897-6010-103");
+  assert.equal(business.phoneDisplay, "0851-2150-8159");
+  assert.equal(business.phoneInternational, "6285121508159");
   assert.equal(business.hours, "Senin-Sabtu, 08.00-17.00");
   assert.equal(business.city, "Makassar");
 });
@@ -70,6 +71,6 @@ test("WhatsApp URL uses the international number and encoded message", () => {
 
   assert.equal(
     url,
-    "https://wa.me/628976010103?text=Halo%20HIJAOE%2C%20saya%20ingin%20konsultasi.",
+    "https://wa.me/6285121508159?text=Halo%20HIJAOE%2C%20saya%20ingin%20konsultasi.",
   );
 });

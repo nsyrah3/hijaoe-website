@@ -186,7 +186,8 @@ test("service pages expose discovery and conversion landmarks", async () => {
     assert.match(html, /aria-label="Breadcrumb"/);
     assert.match(html, /class="service-page__faq"/);
     assert.match(html, /class="section service-related"/);
-    assert.match(html, /https:\/\/wa\.me\/628976010103/);
+    assert.match(html, /https:\/\/wa\.me\/6285121508159/);
+    assert.doesNotMatch(html, /628976010103/);
     assert.match(html, /href="\/galeri"/);
   }
 });

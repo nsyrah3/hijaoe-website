@@ -3,8 +3,8 @@ import { catalogItems, featuredCatalogIds } from "./catalog-data.js";
 export const business = {
   name: "HIJAOE",
   tagline: "Dari bengkel, menjadi bagian dari bangunan Anda.",
-  phoneDisplay: "0897-6010-103",
-  phoneInternational: "628976010103",
+  phoneDisplay: "0851-2150-8159",
+  phoneInternational: "6285121508159",
   hours: "Senin-Sabtu, 08.00-17.00",
   closed: "Minggu tutup",
   city: "Makassar",
