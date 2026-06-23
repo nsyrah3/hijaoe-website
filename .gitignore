@@ -4,3 +4,4 @@ node_modules/
 !.env.example
 server.log
 server-error.log
+.worktrees/
