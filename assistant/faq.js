@@ -12,7 +12,7 @@ const FAQ_ENTRIES = [
     key: "service_area",
     patterns: [/melayani daerah/i, /area layanan/i, /luar makassar/i],
     answer:
-      "HIJAOE melayani Makassar dan sekitarnya. Pengiriman atau pengerjaan di luar area dibicarakan dulu sesuai kebutuhan, Kak.",
+      "HIJAOE melayani Makassar, Gowa, Maros, dan sekitarnya. Pengiriman atau pengerjaan ke wilayah lain di Sulawesi Selatan dapat dibicarakan sesuai kebutuhan, jarak, dan kesepakatan, Kak.",
   },
   {
     key: "services",

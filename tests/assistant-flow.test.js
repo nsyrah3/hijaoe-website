@@ -7,6 +7,26 @@ import {
   handleMessage,
   startConversation,
 } from "../assistant/conversation-engine.js";
+import { EMPTY_CUSTOMER_DATA } from "../assistant/assistant-data.js";
+
+test("continues a restored session without replaying the welcome message", () => {
+  const restored = {
+    state: "location",
+    whatsappNumber: "628111",
+    data: { ...EMPTY_CUSTOMER_DATA, name: "Ari", service: "Kanopi" },
+    failedUnderstanding: 0,
+    handoffReason: "",
+    completed: false,
+  };
+
+  const result = handleMessage(restored, "Gowa");
+
+  assert.equal(result.session.data.location, "Gowa");
+  assert.equal(result.session.state, "dimensions");
+  assert.deepEqual(result.messages, [
+    "Kalau sudah ada, berapa ukuran perkiraannya? Kalau belum tahu, bilang belum tahu juga tidak apa-apa.",
+  ]);
+});
 
 test("assistant opening creates a fresh session and asks for the name", () => {
   const session = createSession("628123456789");

@@ -111,6 +111,53 @@ export async function analyzeCustomerMessage(
   }
 }
 
+export async function requestDeepSeekCompletion({
+  apiKey = process.env.DEEPSEEK_API_KEY,
+  messages,
+  baseUrl = DEEPSEEK_BASE_URL,
+  model = "deepseek-chat",
+  fetchImpl = globalThis.fetch,
+  signal,
+} = {}) {
+  if (!apiKey) {
+    throw new Error("DEEPSEEK_API_KEY is not configured");
+  }
+  if (typeof fetchImpl !== "function") {
+    throw new Error("fetch is not available");
+  }
+
+  const response = await fetchImpl(
+    `${baseUrl}${DEEPSEEK_CHAT_COMPLETIONS_PATH}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: 0.5,
+        max_tokens: 350,
+        stream: false,
+      }),
+      signal,
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek request failed with HTTP ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content !== "string") {
+    throw new Error("DeepSeek response did not include content");
+  }
+
+  return content;
+}
+
 export function fallbackDeepSeekAnalysis(reason = "DeepSeek is unavailable") {
   return {
     ok: false,

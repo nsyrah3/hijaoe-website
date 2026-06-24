@@ -117,4 +117,13 @@ npm.cmd run assistant:simulate:deepseek
 
 DeepSeek hanya dipakai untuk menganalisis jawaban bebas pelanggan dan membuat ringkasan internal. Alur pertanyaan, batasan harga, batasan jadwal, dan handoff tetap dikendalikan oleh engine di `assistant/conversation-engine.js`.
 
-Kode simulator berada di `assistant/`. Endpoint diagnostik webhook WhatsApp tersedia di `/api/whatsapp` dan memerlukan `META_WEBHOOK_VERIFY_TOKEN` serta `META_APP_SECRET` sebagai secret Cloudflare. Balasan bot live dan penyimpanan lead eksternal belum aktif pada tahap ini.
+Kode simulator berada di `assistant/`. Endpoint diagnostik webhook WhatsApp Cloud API tetap tersedia di `/api/whatsapp`.
+
+Bot operasional WhatsApp Web berada di `assistant/bot/` dan dijalankan sebagai proses Node.js terpisah:
+
+```powershell
+npm.cmd run bot:start
+npm.cmd run bot:status
+```
+
+Konfigurasi DeepSeek, Google Sheets, Google Drive, session QR, takeover admin 24 jam, dan auto-start Windows dijelaskan di `docs/whatsapp-web-bot-operations.md`.

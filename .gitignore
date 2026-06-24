@@ -5,3 +5,10 @@ node_modules/
 server.log
 server-error.log
 .worktrees/
+.wwebjs_auth/
+.wwebjs_cache/
+data/whatsapp-bot/
+logs/whatsapp-bot/
+tmp/whatsapp-bot/
+google-service-account*.json
+service-account*.json
