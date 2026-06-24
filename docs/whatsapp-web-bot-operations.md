@@ -88,6 +88,11 @@ npm.cmd run bot:status
 Log launcher berada di `logs\whatsapp-bot\stdout.log` dan
 `logs\whatsapp-bot\stderr.log`. Log tidak boleh berisi token atau isi lengkap chat.
 
+Sinkronisasi Google yang gagal dicoba kembali paling banyak delapan kali dengan jeda
+bertambah. Setelah batas tercapai, lead tetap tersimpan berstatus pending di SQLite
+dan log mencatat `retry_exhausted`; perbaiki konfigurasi Google sebelum memprosesnya
+kembali.
+
 ## Menjalankan Saat Login Windows
 
 Setelah smoke test berhasil:

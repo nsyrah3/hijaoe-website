@@ -17,8 +17,11 @@ export function createSyncService({
   googleClient,
   tempDir,
   clock = Date.now,
+  maxRetryAttempts = 8,
   logger = console,
 }) {
+  const retryLimit = Math.max(1, Number(maxRetryAttempts) || 8);
+
   return {
     async uploadCustomerPhoto(input) {
       validateMedia(input.mimeType, input.bytes);
@@ -101,6 +104,12 @@ export function createSyncService({
           store.completeRetry(job.id);
         } catch (error) {
           const attempts = Number(job.attempts || 0) + 1;
+          if (attempts >= retryLimit) {
+            store.completeRetry(job.id);
+            logSafe(logger, "retry_exhausted", error);
+            continue;
+          }
+
           store.rescheduleRetry(
             job.id,
             attempts,

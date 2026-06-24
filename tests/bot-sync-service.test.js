@@ -137,3 +137,45 @@ test("external errors are sanitized before persistence", () => {
   });
   assert.equal(sanitizeExternalError(error), "GaxiosError (HTTP 403)");
 });
+
+test("stops retrying after the configured attempt limit", async () => {
+  const store = createFakeStore();
+  store.dueRetries = [
+    {
+      id: 7,
+      job_type: "sync_lead",
+      payload: {
+        number: "628111",
+        lead: { customer_name: "Ari" },
+      },
+      attempts: 7,
+    },
+  ];
+  const warnings = [];
+  const service = createSyncService({
+    store,
+    googleClient: {
+      appendLead: async () => {
+        throw Object.assign(new Error("private response body"), {
+          name: "GaxiosError",
+          status: 503,
+        });
+      },
+    },
+    tempDir: mkdtempSync(path.join(tmpdir(), "hijaoe-sync-")),
+    clock: () => 10_000,
+    maxRetryAttempts: 8,
+    logger: {
+      warn(message) {
+        warnings.push(message);
+      },
+    },
+  });
+
+  await service.processDueRetries();
+
+  assert.deepEqual(store.completed, [7]);
+  assert.equal(store.rescheduled.length, 0);
+  assert.match(warnings.at(-1), /retry_exhausted/);
+  assert.doesNotMatch(warnings.at(-1), /private response body/);
+});
