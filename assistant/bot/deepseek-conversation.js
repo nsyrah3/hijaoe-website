@@ -17,8 +17,13 @@ const FALLBACK_REPLY =
   "Maaf Kak, boleh dikirim ulang singkat kebutuhannya? Nanti saya catat untuk admin.";
 const PHOTO_RECEIVED_FALLBACK_REPLY =
   "Baik Kak, fotonya sudah saya terima dan saya catat sebagai referensi modelnya. Nanti admin HIJAOE bantu cek detail lanjutannya.";
+const NO_PHOTO_REFERENCES_VALUE = "Tidak ada referensi foto";
 const DEFERRED_DIMENSIONS_VALUE =
   "Belum ditentukan, admin HIJAOE menyesuaikan dari referensi dan kebutuhan";
+const COLOR_OPTIONS_FALLBACK_REPLY =
+  "Untuk warna bisa disesuaikan dengan kebutuhan, Kak. Kalau ada preferensi warna, boleh disebutkan.";
+const NAME_ONLY_FALLBACK_REPLY =
+  "Boleh tahu atas nama siapa untuk catatan, Kak?";
 const TECHNICAL_DECISION_FALLBACK_REPLY =
   "Baik Kak, fotonya saya catat sebagai referensi. Untuk ukuran pastinya nanti admin HIJAOE bantu tentukan sesuai model dan kebutuhan Kakak.";
 const RESTRICTED_HANDOFF_REPLY =
@@ -49,6 +54,16 @@ const DIMENSION_DEFER_PATTERN =
   /\b(?:kamu|admin|hijaoe|tim)?\s*(?:tentukan|sesuaikan)\b|\b(?:terserah|bebas|belum tahu|tidak tahu|nggak tahu|ga tau|gak tau|belum ada ukuran)\b/i;
 const DIMENSION_CONTEXT_PATTERN =
   /\b(?:ukuran|dimensi|panjang|lebar|tinggi|spesifikasi|size)\b/i;
+const NO_PHOTO_REFERENCES_PATTERN =
+  /\b(?:gak|ga|nggak|ngga|tidak|belum|gada|nggada|enggak)\s*(?:ada|punya)?\s*(?:(?:refe?rensi|refrensi)\s*)?(?:foto|gambar|model)\b|\b(?:foto|gambar|model|refe?rensi|refrensi)\s*(?:gak|ga|nggak|ngga|tidak|belum|gada|nggada|enggak)\s*(?:ada|punya)?\b/i;
+const COLOR_QUESTION_PATTERN =
+  /\bwarna\b.*\b(?:apa|apa aja|apa saja|pilihan|tersedia)\b|\b(?:apa|apa aja|apa saja|pilihan)\b.*\bwarna\b/i;
+const COLOR_PREFERENCE_PATTERN =
+  /\bwarna(?:nya)?\s+([a-zA-Z0-9\s-]{2,60})/i;
+const UNSUPPORTED_COLOR_OPTIONS_PATTERN =
+  /\b(?:biru|hijau|merah|kuning|putih)\s*,\s*(?:biru|hijau|merah|kuning|putih)\b|\bpilihan warna standar\b|\bwarna standar\b/i;
+const CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN =
+  /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b|\bnama lengkap\b|\bnama pemesan\b|\batas nama siapa\b/i;
 
 export async function runDeepSeekConversation({
   session,
@@ -113,6 +128,21 @@ export async function runDeepSeekConversation({
       customerText,
     });
     if (restrictedOutputReason) {
+      if (
+        restrictedOutputReason === "unneeded_contact_or_name" &&
+        hasMinimumLeadData(currentSession)
+      ) {
+        const confirmingSession = {
+          ...currentSession,
+          state: "confirming",
+        };
+        return {
+          session: confirmingSession,
+          messages: [buildSummary(confirmingSession)],
+          lead: null,
+          replyIsFinal: true,
+        };
+      }
       return fallback(
         currentSession,
         fallbackReplyForRestriction(restrictedOutputReason),
@@ -162,13 +192,18 @@ export function buildConversationMessages({ session, messages }) {
         "Isi semua data yang sudah jelas dari customerMessages: service, location, dimensions, material, targetTime, photoReferences, name, email, dan emailMarketingConsent.",
         "Field minimal sebelum konfirmasi adalah service, location, dan name; field lain dicatat jika pelanggan menyebutnya atau mengirim foto.",
         "Jika pelanggan belum tahu, menyerahkan, atau meminta HIJAOE menentukan ukuran, isi dataPatch.dimensions dengan \"Belum ditentukan\" dan lanjutkan ke info penting berikutnya.",
+        "Jika pelanggan bilang tidak ada foto atau referensi, isi dataPatch.photoReferences dengan \"Tidak ada referensi foto\" dan jangan tanyakan foto lagi.",
+        "Field material juga boleh dipakai untuk warna atau finishing, misalnya \"Warna natural\".",
         "Jika beberapa data kurang, pilih satu pertanyaan lanjutan yang paling penting untuk melengkapi lead.",
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
         "Jangan memberi kepastian survei, produksi, pemasangan, atau tanggal selesai.",
         "Jangan mengarang stok, ketersediaan bahan, ukuran standar, angka dimensi, atau keputusan struktur.",
+        "Jika pelanggan bertanya pilihan warna atau bahan, jangan mengarang daftar pilihan; jawab bahwa warna atau bahan bisa disesuaikan dan minta preferensi pelanggan.",
         "Jangan menyebut ukuran pasti atau ukuran standar kecuali pelanggan sudah menyebut ukuran itu.",
         "Jika customerMessages berisi [Foto diterima...] atau data.photoReferences sudah terisi, jangan minta foto lagi; akui bahwa foto sudah diterima.",
+        "Jangan meminta nomor, kontak, WA, telepon, atau HP karena nomor WhatsApp sudah tersedia dari chat.",
+        "Jika data.name sudah terisi, jangan minta nama lengkap atau nama pemesan lagi.",
         "Jika pelanggan meminta kamu menentukan ukuran atau detail teknis, jangan menentukan sendiri; katakan admin HIJAOE akan bantu sesuaikan dari referensi dan kebutuhan.",
         "Kalau pelanggan tanya harga, negosiasi, komplain, minta admin, atau minta jadwal pasti, set handoff true.",
         "Ekstrak data yang sudah jelas disebut pelanggan dan jangan tanya ulang data yang sudah ada.",
@@ -235,16 +270,33 @@ function normalizeSession(session) {
 }
 
 function applyCustomerContextPatches(session, customerText) {
-  if (!shouldMarkDimensionsDeferred(session, customerText)) {
-    return session;
+  let data = session.data;
+
+  if (shouldMarkDimensionsDeferred({ ...session, data }, customerText)) {
+    data = {
+      ...data,
+      dimensions: DEFERRED_DIMENSIONS_VALUE,
+    };
+  }
+
+  if (shouldMarkNoPhotoReferences({ ...session, data }, customerText)) {
+    data = {
+      ...data,
+      photoReferences: NO_PHOTO_REFERENCES_VALUE,
+    };
+  }
+
+  const colorPreference = extractColorPreference(customerText);
+  if (colorPreference && !data.material.trim()) {
+    data = {
+      ...data,
+      material: colorPreference,
+    };
   }
 
   return {
     ...session,
-    data: {
-      ...session.data,
-      dimensions: DEFERRED_DIMENSIONS_VALUE,
-    },
+    data,
   };
 }
 
@@ -258,6 +310,29 @@ function shouldMarkDimensionsDeferred(session, customerText) {
         hasPhotoContext(session, customerText)
       ),
   );
+}
+
+function shouldMarkNoPhotoReferences(session, customerText) {
+  return Boolean(
+    !session.data.photoReferences.trim() &&
+      NO_PHOTO_REFERENCES_PATTERN.test(customerText),
+  );
+}
+
+function extractColorPreference(customerText) {
+  if (COLOR_QUESTION_PATTERN.test(customerText)) {
+    return "";
+  }
+  const match = customerText.match(COLOR_PREFERENCE_PATTERN);
+  if (!match) {
+    return "";
+  }
+  const value = match[1]
+    .replace(/\b(?:aja|saja|dong|ya|kak)\b/gi, " ")
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return value ? `Warna ${value}` : "";
 }
 
 function applyOutput(session, output) {
@@ -331,6 +406,15 @@ function getRestrictedOutputReason(output, context) {
   ) {
     return "unsupported_dimensions";
   }
+  if (UNSUPPORTED_COLOR_OPTIONS_PATTERN.test(output.reply)) {
+    return "unsupported_color_options";
+  }
+  if (
+    CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN.test(output.reply) &&
+    (context.session.data.name.trim() || /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b/i.test(output.reply))
+  ) {
+    return "unneeded_contact_or_name";
+  }
   return "";
 }
 
@@ -340,6 +424,12 @@ function fallbackReplyForRestriction(reason) {
   }
   if (reason === "unsupported_dimensions") {
     return TECHNICAL_DECISION_FALLBACK_REPLY;
+  }
+  if (reason === "unsupported_color_options") {
+    return COLOR_OPTIONS_FALLBACK_REPLY;
+  }
+  if (reason === "unneeded_contact_or_name") {
+    return NAME_ONLY_FALLBACK_REPLY;
   }
   return FALLBACK_REPLY;
 }

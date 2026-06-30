@@ -215,6 +215,137 @@ test("records deferred dimensions and lets DeepSeek move to the next missing lea
   assert.match(result.messages[0], /atas nama siapa|nama/i);
 });
 
+test("records absent photo references so DeepSeek does not ask for them again", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["gada refrensi foto"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, tidak masalah kalau belum ada foto referensi. Boleh tahu target waktunya kapan?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan tidak memiliki foto referensi.",
+      }),
+  });
+
+  assert.match(result.session.data.photoReferences, /tidak ada referensi foto/i);
+  assert.doesNotMatch(result.messages[0], /kirim(?:kan)?\s+foto|referensi foto.*dikirim/i);
+});
+
+test("records natural color as material or style context", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["warna natural aja"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, warna natural saya catat. Ada referensi foto atau contoh model?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan memilih warna natural.",
+      }),
+  });
+
+  assert.match(result.session.data.material, /warna natural/i);
+});
+
+test("does not invent available color options", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["emang ada warna apa aja"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Pilihan warna standar biasanya biru, hijau, merah, kuning, dan putih. Ada preferensi warna tertentu?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Pilihan warna standar biasanya biru, hijau, merah, kuning, dan putih. Ada preferensi warna tertentu?",
+  );
+  assert.doesNotMatch(result.messages[0], /biru, hijau, merah, kuning/i);
+  assert.match(result.messages[0], /warna.*sesuai|disesuaikan/i);
+});
+
+test("does not ask for contact after the customer name is already known", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      name: "Nasroh",
+      service: "Meja & Kursi Sekolah",
+      location: "Tamalanrea",
+      dimensions: "Belum ditentukan",
+      material: "Warna natural",
+      targetTime: "Secepatnya",
+      photoReferences: "Tidak ada referensi foto",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["nasroh"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Terima kasih, Kak Nasroh. Untuk kelengkapan data, boleh kami tahu nama lengkap dan kontak yang bisa dihubungi?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.equal(result.session.state, "confirming");
+  assert.match(result.messages[0], /Ringkasan kebutuhan awal/);
+  assert.doesNotMatch(result.messages[0], /kontak|nomor|nama lengkap/i);
+});
+
 test("allows exact dimensions when they came from the customer", async () => {
   const session = {
     ...createSession("628111"),
