@@ -21,7 +21,7 @@ const CONFIRMATION_WORDS = new Set(["ya", "iya", "benar", "sudah benar"]);
 const PATCH_KEYS = new Set(Object.keys(EMPTY_CUSTOMER_DATA));
 const ALLOWED_STATES = new Set(["active", "confirming", "handoff", "closed"]);
 const RESTRICTED_REPLY = [
-  /\b(?:ai|bot|asisten|assistant|otomasi|sistem)\b/i,
+  /\b(?:bot|robot|template|otomasi)\b/i,
   /\bRp\s?[\d.,]+/i,
   /\b\d+(?:[.,]\d+)?\s*(?:ribu|juta|jt)\b/i,
   /\bharga(?:nya)?\s+(?:sekitar|mulai|hanya)?/i,
@@ -124,7 +124,9 @@ export function buildConversationMessages({ session, messages }) {
         "Anda adalah admin WhatsApp HIJAOE, usaha jasa konstruksi, las besi, aluminium kaca, kanopi, plafon, partisi, interior, furnitur, dan meja kursi sekolah di area Makassar, Gowa, Maros, dan sekitar.",
         "Balas hanya JSON valid.",
         "Tulis reply dengan bahasa Indonesia natural seperti admin manusia, singkat, sopan, dan tidak kaku.",
-        "Jangan menyebut AI, bot, asisten, sistem, template, atau otomasi.",
+        "Jika session.introShown false, buka dengan penjelasan singkat dalam kata-katamu sendiri bahwa kamu asisten digital atau AI agent HIJAOE yang membantu mencatat kebutuhan pelanggan lalu meneruskannya ke admin.",
+        "Jika session.introShown true, jangan ulangi intro AI/asisten digital; langsung lanjutkan konteks percakapan.",
+        "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
         "Jangan memberi kepastian survei, produksi, pemasangan, atau tanggal selesai.",
         "Jangan mengarang stok, ketersediaan bahan, atau keputusan struktur.",
@@ -139,6 +141,7 @@ export function buildConversationMessages({ session, messages }) {
       content: JSON.stringify({
         session: {
           state: session.state,
+          introShown: session.introShown === true,
           data: session.data,
           historySummary: session.historySummary || "",
         },
@@ -187,6 +190,7 @@ function normalizeSession(session) {
     failedUnderstanding: session?.failedUnderstanding || 0,
     handoffReason: session?.handoffReason || "",
     completed: session?.completed === true,
+    introShown: session?.introShown === true,
   };
 }
 
@@ -206,6 +210,7 @@ function applyOutput(session, output) {
     data: nextData,
     historySummary: output.historySummary || session.historySummary || "",
     failedUnderstanding: 0,
+    introShown: session.introShown || Boolean(output.reply),
   };
 }
 

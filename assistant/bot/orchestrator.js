@@ -305,8 +305,12 @@ async function prepareCustomerInput({
     };
   }
 
+  const photoContext = uploaded.ok
+    ? `[Foto diterima: ${uploaded.driveUrl}]`
+    : "[Foto diterima, belum tersimpan ke Drive]";
+
   return {
-    text: text || (uploaded.ok ? "Foto sudah dikirim" : "Foto dikirim"),
+    text: text ? `${text}\n${photoContext}` : photoContext,
     driveUrl: uploaded.driveUrl || "",
     driveFolderUrl: uploaded.driveFolderUrl || "",
   };

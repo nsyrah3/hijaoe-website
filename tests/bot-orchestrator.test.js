@@ -41,7 +41,7 @@ function createHarness(overrides = {}) {
       return id;
     },
   };
-  const syncService = {
+  const syncService = overrides.syncService || {
     async uploadCustomerPhoto(input) {
       state.uploads.push(input);
       return {
@@ -193,6 +193,51 @@ test("photo upload URL is stored in the photo field", async () => {
     state.sessions.get("628111").data.photoReferences,
     /drive\.google\.com/,
   );
+});
+
+test("photo upload failure still passes photo context into the conversation", async () => {
+  let capturedMessages = [];
+  const { orchestrator, state } = createHarness({
+    syncService: {
+      async uploadCustomerPhoto(input) {
+        state.uploads.push(input);
+        return { ok: false };
+      },
+      async syncConfirmedLead(number, lead) {
+        state.leads.push({ number, lead });
+        return { ok: true };
+      },
+    },
+    runConversation: async ({ session, messages }) => {
+      capturedMessages = messages;
+      return {
+        session: {
+          ...session,
+          state: "active",
+        },
+        messages: ["Siap Kak, fotonya sudah saya terima. Ada ukuran atau jumlahnya?"],
+        lead: null,
+        replyIsFinal: true,
+      };
+    },
+  });
+
+  await orchestrator.handleIncoming(
+    incoming({
+      id: "photo-fail",
+      type: "image",
+      text: "ini kak",
+      media: { mimeType: "image/jpeg", bytes: Buffer.from("photo") },
+    }),
+  );
+
+  assert.equal(state.uploads.length, 1);
+  assert.match(capturedMessages.join("\n"), /ini kak/);
+  assert.match(
+    capturedMessages.join("\n"),
+    /Foto diterima, belum tersimpan ke Drive/,
+  );
+  assert.match(state.sent[0].text, /fotonya sudah saya terima/i);
 });
 
 test("confirmed lead is synchronized exactly once", async () => {

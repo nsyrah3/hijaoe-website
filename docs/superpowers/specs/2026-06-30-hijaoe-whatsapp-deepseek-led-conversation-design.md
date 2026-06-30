@@ -29,6 +29,7 @@ Program tetap bertugas:
 - menjaga agar bot tidak mengirim pesan massal atau memulai chat;
 - mendeteksi takeover manual;
 - menyimpan lead ke SQLite, Sheets, dan foto ke Drive;
+- memberi konteks "foto diterima" ke DeepSeek walaupun upload Drive gagal;
 - fallback saat DeepSeek gagal.
 
 ## Buffer Pesan
@@ -56,9 +57,12 @@ data:
 historySummary
 handoffReason
 completed
+introShown
 ```
 
 `historySummary` adalah ringkasan singkat non-rahasia untuk membantu DeepSeek memahami percakapan tanpa menyimpan seluruh chat panjang di prompt.
+
+`introShown` menandai apakah pelanggan sudah mendapat pembuka transparan bahwa percakapan dibantu asisten digital atau AI agent HIJAOE. Intro hanya dipakai pada balasan DeepSeek pertama, lalu tidak diulang.
 
 ## Output DeepSeek
 
@@ -93,7 +97,9 @@ Program hanya menerima field yang dikenal. Field kosong tidak menghapus data lam
 Balasan harus:
 
 - bahasa Indonesia natural seperti admin WhatsApp;
-- singkat, tidak terlalu formal, dan tidak menyebut AI, bot, asisten, sistem, atau otomasi;
+- singkat dan tidak terlalu formal;
+- pada balasan pertama, transparan bahwa chat dibantu asisten digital atau AI agent HIJAOE yang mencatat kebutuhan lalu meneruskan ke admin;
+- setelah intro pertama, tidak mengulang penjelasan AI/asisten digital;
 - menyesuaikan jika pelanggan mengirim beberapa pesan sekaligus;
 - tidak menanyakan ulang data yang sudah jelas disebut pelanggan;
 - bertanya maksimal satu hal utama ketika data masih kurang;
@@ -106,7 +112,7 @@ Balasan tidak boleh:
 - menjanjikan kepastian survei, produksi, pemasangan, atau tanggal selesai;
 - membuat klaim stok/ketersediaan bahan;
 - memberi keputusan struktur atau keselamatan;
-- menyebut bahwa ia AI, bot, asisten, atau sistem otomatis.
+- menyebut bot, robot, template, otomasi, atau proses internal.
 
 Jika pelanggan bertanya harga, negosiasi, komplain, atau meminta jadwal pasti, bot handoff ke admin dengan balasan aman.
 
@@ -141,8 +147,10 @@ Test yang dibutuhkan:
 - dua atau tiga pesan cepat digabung menjadi satu balasan;
 - DeepSeek bisa mengisi beberapa field dari satu pesan bebas;
 - bot tidak menanyakan ulang field yang sudah diekstrak;
+- bot memberi intro transparan sekali dan tidak mengulanginya;
+- foto dengan upload Drive gagal tetap masuk ke DeepSeek sebagai foto diterima;
 - output harga atau janji jadwal ditolak;
-- output yang menyebut AI/bot/asisten ditolak;
+- output yang menyebut bot/template/otomasi ditolak;
 - lead hanya sync setelah konfirmasi;
 - handoff tetap diam sampai takeover selesai atau session reset;
 - fallback berjalan saat JSON DeepSeek rusak;

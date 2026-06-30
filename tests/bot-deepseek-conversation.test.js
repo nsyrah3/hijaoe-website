@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createSession } from "../assistant/conversation-engine.js";
-import { runDeepSeekConversation } from "../assistant/bot/deepseek-conversation.js";
+import {
+  buildConversationMessages,
+  runDeepSeekConversation,
+} from "../assistant/bot/deepseek-conversation.js";
 
 test("extracts lead fields and returns a natural DeepSeek reply", async () => {
   const result = await runDeepSeekConversation({
@@ -27,6 +30,48 @@ test("extracts lead fields and returns a natural DeepSeek reply", async () => {
   assert.match(result.messages[0], /ukuran|jumlah/i);
 });
 
+test("allows a transparent AI intro on the first DeepSeek reply and marks it shown", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["halo kak"],
+    complete: async ({ messages }) => {
+      const prompt = JSON.stringify(messages);
+      assert.match(prompt, /introShown/);
+      assert.match(prompt, /asisten digital|AI/i);
+
+      return JSON.stringify({
+        reply:
+          "Halo Kak, saya AI agent HIJAOE. Saya bantu catat dulu kebutuhan Kakak, nanti saya teruskan ke admin ya. Mau dibantu buat apa?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan menyapa admin HIJAOE.",
+      });
+    },
+  });
+
+  assert.equal(result.session.introShown, true);
+  assert.match(result.messages[0], /AI agent HIJAOE/);
+});
+
+test("tells DeepSeek not to repeat the intro once it was shown", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["saya mau meja sekolah"],
+  });
+
+  const prompt = JSON.stringify(messages);
+  assert.match(prompt, /introShown/);
+  assert.match(prompt, /jangan ulangi intro/i);
+});
+
 test("falls back when DeepSeek returns invalid JSON", async () => {
   const result = await runDeepSeekConversation({
     session: createSession("628111"),
@@ -45,6 +90,7 @@ test("rejects restricted DeepSeek replies", async () => {
   for (const reply of [
     "Harganya Rp2 juta, Kak.",
     "Saya bot HIJAOE, siap membantu.",
+    "Ini hanya template otomatis.",
     "Pasti selesai hari Senin.",
   ]) {
     const result = await runDeepSeekConversation({
@@ -63,7 +109,10 @@ test("rejects restricted DeepSeek replies", async () => {
     });
 
     assert.notEqual(result.messages[0], reply);
-    assert.doesNotMatch(result.messages[0], /Rp2 juta|bot HIJAOE|Pasti selesai/i);
+    assert.doesNotMatch(
+      result.messages[0],
+      /Rp2 juta|bot HIJAOE|template otomatis|Pasti selesai/i,
+    );
   }
 });
 
