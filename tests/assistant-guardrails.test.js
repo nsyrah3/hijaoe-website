@@ -5,6 +5,7 @@ import {
   handleMessage,
   startConversation,
 } from "../assistant/conversation-engine.js";
+import { business } from "../assets/js/site-data.js";
 
 function sessionAt(state) {
   const base = createSession("628123456789");
@@ -28,6 +29,26 @@ test("FAQ answer resumes the current collection question", () => {
   assert.match(result.messages[1], /daerah mana/);
 });
 
+test("FAQ answers business address questions with Google Maps", () => {
+  const session = sessionAt("location");
+  const result = handleMessage(session, "Alamatnya di mana?");
+
+  assert.equal(result.session.state, "location");
+  assert.match(result.messages[0], /Bengkel HIJAOE/i);
+  assert.match(result.messages[0], /Makassar/i);
+  assert.match(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+  assert.match(result.messages[1], /daerah mana/);
+});
+
+test("customer work location is not treated as a business address FAQ", () => {
+  const session = sessionAt("location");
+  const result = handleMessage(session, "lokasi pengerjaan saya di Gowa");
+
+  assert.equal(result.session.state, "dimensions");
+  assert.equal(result.session.data.location, "lokasi pengerjaan saya di Gowa");
+  assert.doesNotMatch(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+});
+
 test("FAQ answer resumes the confirmation summary", () => {
   const session = sessionAt("confirmation");
   const result = handleMessage(session, "Jam bukanya kapan?");
@@ -36,6 +57,10 @@ test("FAQ answer resumes the confirmation summary", () => {
   assert.match(result.messages[0], /Senin-Sabtu, 08\.00-17\.00/);
   assert.match(result.messages[1], /Ini ringkasannya|Ringkasan kebutuhan awal/);
 });
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 test("customer can request a human at any state", () => {
   const session = startConversation(createSession("628123456789")).session;

@@ -5,6 +5,7 @@ import {
   buildConversationMessages,
   runDeepSeekConversation,
 } from "../assistant/bot/deepseek-conversation.js";
+import { business } from "../assets/js/site-data.js";
 
 test("extracts lead fields and returns a natural DeepSeek reply", async () => {
   const result = await runDeepSeekConversation({
@@ -177,6 +178,57 @@ test("guides DeepSeek to confirm when minimum lead data is complete", () => {
     payload.leadGuidance.avoidQuestions.join(" "),
     /jangan paksa data opsional/i,
   );
+});
+
+test("answers HIJAOE address questions with the Google Maps link without calling DeepSeek", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["alamatnya di mana kak?"],
+    complete: async () => {
+      throw new Error("address questions should be answered without DeepSeek");
+    },
+  });
+
+  assert.equal(result.replyIsFinal, true);
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /Bengkel HIJAOE/i);
+  assert.match(result.messages[0], /Makassar/i);
+  assert.match(result.messages[0], /Google Maps|maps/i);
+  assert.match(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+  assert.equal(result.session.data.location, "");
+});
+
+test("answers explicit Google Maps requests with the business map link", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["boleh minta google maps hijaoe"],
+    complete: async () => {
+      throw new Error("maps requests should be answered without DeepSeek");
+    },
+  });
+
+  assert.match(result.messages[0], /Google Maps|maps/i);
+  assert.match(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+});
+
+test("does not treat customer work location as a business address question", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["lokasi pengerjaan saya di Gowa"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Siap Kak, lokasi pengerjaan di Gowa saya catat. Mau dibantu buat apa?",
+        dataPatch: { location: "Gowa" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan menyebut lokasi pengerjaan di Gowa.",
+      }),
+  });
+
+  assert.equal(result.session.data.location, "Gowa");
+  assert.doesNotMatch(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
 });
 
 test("falls back when DeepSeek returns invalid JSON", async () => {
@@ -654,3 +706,7 @@ test("creates a lead when a confirmation session is accepted", async () => {
   assert.equal(result.lead.service_type, "Meja sekolah");
   assert.equal(result.lead.created_at, "2026-06-30T04:00:00.000Z");
 });
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

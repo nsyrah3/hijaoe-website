@@ -108,6 +108,12 @@ DeepSeek harus membalas JSON valid:
 
 Program hanya menerima field yang dikenal. Field kosong tidak menghapus data lama kecuali DeepSeek secara eksplisit memakai `null` untuk field opsional yang boleh dikosongkan.
 
+## FAQ Bisnis Deterministik
+
+Pertanyaan bisnis yang jawabannya sudah pasti tidak perlu dikirim ke DeepSeek. Program boleh menjawab langsung dari data resmi HIJAOE, lalu mempertahankan session pelanggan.
+
+Untuk pertanyaan alamat, lokasi bengkel, shareloc, atau Google Maps HIJAOE, bot menjawab dengan kota bengkel dan `business.mapUrl`. Pola ini tidak boleh menangkap pesan yang sedang memberi lokasi pengerjaan pelanggan, misalnya "lokasi pengerjaan saya di Gowa"; pesan seperti itu tetap diperlakukan sebagai data lead `location`.
+
 ## Aturan Balasan
 
 Balasan harus:
@@ -129,6 +135,7 @@ Balasan harus:
 - jika foto sudah diterima, tidak boleh meminta foto lagi dan harus mengakui foto itu sebagai referensi;
 - mengikuti `leadGuidance` untuk memilih pertanyaan berikutnya;
 - konfirmasi ringkasan ketika `leadGuidance.readyToConfirm` true, bukan memaksa data opsional lagi;
+- menjawab pertanyaan alamat/lokasi bengkel HIJAOE dengan link Google Maps resmi jika pelanggan memintanya;
 - menampilkan ringkasan saat data cukup dan meminta konfirmasi pelanggan.
 
 Balasan tidak boleh:
@@ -186,6 +193,8 @@ Test yang dibutuhkan:
 - output yang menanyakan jumlah untuk pekerjaan satuan seperti meja kursi tetap boleh;
 - prompt DeepSeek membawa `leadGuidance` berisi tipe layanan, field wajib yang kurang, saran pertanyaan, dan larangan pertanyaan;
 - `leadGuidance.readyToConfirm` mengarahkan DeepSeek untuk konfirmasi saat data minimal sudah lengkap;
+- pertanyaan alamat, lokasi bengkel, shareloc, atau Google Maps HIJAOE dijawab dengan `business.mapUrl` tanpa memanggil DeepSeek;
+- pesan lokasi pengerjaan pelanggan tidak boleh keliru dijawab sebagai alamat bengkel HIJAOE;
 - output harga atau janji jadwal ditolak;
 - output yang menyebut bot/template/otomasi ditolak;
 - lead hanya sync setelah konfirmasi;

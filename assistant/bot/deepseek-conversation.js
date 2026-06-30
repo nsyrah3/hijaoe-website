@@ -11,6 +11,7 @@ import {
   detectHandoffRequest,
   detectPriceIntent,
   detectScheduleGuaranteeIntent,
+  findFaq,
 } from "../faq.js";
 
 const FALLBACK_REPLY =
@@ -104,6 +105,16 @@ export async function runDeepSeekConversation({
       session: nextSession,
       messages: [COMPLETION_MESSAGE, HANDOFF_MESSAGE],
       lead: buildLead(nextSession, now),
+      replyIsFinal: true,
+    };
+  }
+
+  const faq = findFaq(customerText);
+  if (faq) {
+    return {
+      session: currentSession,
+      messages: [faq.answer],
+      lead: null,
       replyIsFinal: true,
     };
   }

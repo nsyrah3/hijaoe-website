@@ -21,8 +21,16 @@ const FAQ_ENTRIES = [
   },
   {
     key: "workshop_location",
-    patterns: [/alamat bengkel/i, /lokasi bengkel/i, /google maps/i],
-    answer: `Bengkel HIJAOE berada di ${business.city}. Lokasinya bisa dibuka di ${business.mapUrl}`,
+    patterns: [
+      /alamat bengkel/i,
+      /lokasi bengkel/i,
+      /\b(?:alamat|lokasi)\s+(?:hijaoe|bengkel|workshop|kantor|toko)\b/i,
+      /\b(?:alamatnya|lokasinya)\s+(?:di\s+)?(?:mana|dimana)\b/i,
+      /\bgoogle\s+maps\b/i,
+      /\b(?:minta|kirim|share)\s+(?:link\s+)?(?:maps|map|shareloc|share location)\b/i,
+      /\b(?:maps|map|shareloc|share location)(?:nya)?\s+(?:hijaoe|bengkel|workshop|kantor|toko)?\b/i,
+    ],
+    answer: `Bengkel HIJAOE berada di ${business.city}. Ini link Google Maps-nya: ${business.mapUrl}`,
   },
 ];
 
