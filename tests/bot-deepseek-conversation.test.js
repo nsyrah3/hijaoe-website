@@ -72,6 +72,7 @@ test("first intro prompt focuses on collecting lead info without promising admin
   assert.match(systemPrompt, /material/i);
   assert.match(systemPrompt, /targetTime/i);
   assert.match(systemPrompt, /photoReferences/i);
+  assert.match(systemPrompt, /Belum ditentukan/i);
 });
 
 test("tells DeepSeek not to repeat the intro once it was shown", () => {
@@ -176,6 +177,42 @@ test("does not send exact dimensions that the customer never provided", async ()
   );
   assert.doesNotMatch(result.messages[0], /120cm|60cm|75cm/i);
   assert.match(result.messages[0], /admin HIJAOE.*ukuran|ukuran.*admin HIJAOE/i);
+  assert.match(result.session.data.dimensions, /belum ditentukan/i);
+  assert.doesNotMatch(result.session.data.dimensions, /120cm|60cm|75cm/i);
+});
+
+test("records deferred dimensions and lets DeepSeek move to the next missing lead field", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    historySummary: "Admin menanyakan ukuran atau spesifikasi tambahan.",
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      photoReferences: "https://drive.google.com/file/d/photo/view",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["kamu tentukan coba"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Siap Kak, ukuran nanti kami sesuaikan dari referensi modelnya. Boleh tahu atas nama siapa untuk catatan?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary:
+          "Pelanggan menyerahkan ukuran meja sekolah kepada HIJAOE dari foto referensi.",
+      }),
+  });
+
+  assert.match(result.session.data.dimensions, /belum ditentukan/i);
+  assert.match(result.messages[0], /atas nama siapa|nama/i);
 });
 
 test("allows exact dimensions when they came from the customer", async () => {

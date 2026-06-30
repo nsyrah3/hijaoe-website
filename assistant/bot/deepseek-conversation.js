@@ -17,6 +17,8 @@ const FALLBACK_REPLY =
   "Maaf Kak, boleh dikirim ulang singkat kebutuhannya? Nanti saya catat untuk admin.";
 const PHOTO_RECEIVED_FALLBACK_REPLY =
   "Baik Kak, fotonya sudah saya terima dan saya catat sebagai referensi modelnya. Nanti admin HIJAOE bantu cek detail lanjutannya.";
+const DEFERRED_DIMENSIONS_VALUE =
+  "Belum ditentukan, admin HIJAOE menyesuaikan dari referensi dan kebutuhan";
 const TECHNICAL_DECISION_FALLBACK_REPLY =
   "Baik Kak, fotonya saya catat sebagai referensi. Untuk ukuran pastinya nanti admin HIJAOE bantu tentukan sesuai model dan kebutuhan Kakak.";
 const RESTRICTED_HANDOFF_REPLY =
@@ -43,6 +45,10 @@ const DIMENSION_SEQUENCE_PATTERN =
 const DIMENSION_WITH_UNIT_PATTERN =
   /\b\d+(?:[.,]\d+)?\s*(?:cm|mm|meter|m)\b/gi;
 const NUMBER_PATTERN = /\d+(?:[.,]\d+)?/g;
+const DIMENSION_DEFER_PATTERN =
+  /\b(?:kamu|admin|hijaoe|tim)?\s*(?:tentukan|sesuaikan)\b|\b(?:terserah|bebas|belum tahu|tidak tahu|nggak tahu|ga tau|gak tau|belum ada ukuran)\b/i;
+const DIMENSION_CONTEXT_PATTERN =
+  /\b(?:ukuran|dimensi|panjang|lebar|tinggi|spesifikasi|size)\b/i;
 
 export async function runDeepSeekConversation({
   session,
@@ -54,7 +60,10 @@ export async function runDeepSeekConversation({
     .filter(Boolean)
     .join("\n");
   const normalized = customerText.toLowerCase();
-  const currentSession = normalizeSession(session);
+  const currentSession = applyCustomerContextPatches(
+    normalizeSession(session),
+    customerText,
+  );
 
   if (currentSession.state === "confirming" && CONFIRMATION_WORDS.has(normalized)) {
     const nextSession = {
@@ -152,6 +161,7 @@ export function buildConversationMessages({ session, messages }) {
         "Tujuan utama percakapan adalah melengkapi data kebutuhan pelanggan ke dataPatch, bukan sekadar menjawab umum.",
         "Isi semua data yang sudah jelas dari customerMessages: service, location, dimensions, material, targetTime, photoReferences, name, email, dan emailMarketingConsent.",
         "Field minimal sebelum konfirmasi adalah service, location, dan name; field lain dicatat jika pelanggan menyebutnya atau mengirim foto.",
+        "Jika pelanggan belum tahu, menyerahkan, atau meminta HIJAOE menentukan ukuran, isi dataPatch.dimensions dengan \"Belum ditentukan\" dan lanjutkan ke info penting berikutnya.",
         "Jika beberapa data kurang, pilih satu pertanyaan lanjutan yang paling penting untuk melengkapi lead.",
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
@@ -222,6 +232,32 @@ function normalizeSession(session) {
     completed: session?.completed === true,
     introShown: session?.introShown === true,
   };
+}
+
+function applyCustomerContextPatches(session, customerText) {
+  if (!shouldMarkDimensionsDeferred(session, customerText)) {
+    return session;
+  }
+
+  return {
+    ...session,
+    data: {
+      ...session.data,
+      dimensions: DEFERRED_DIMENSIONS_VALUE,
+    },
+  };
+}
+
+function shouldMarkDimensionsDeferred(session, customerText) {
+  return Boolean(
+    !session.data.dimensions.trim() &&
+      DIMENSION_DEFER_PATTERN.test(customerText) &&
+      (
+        DIMENSION_CONTEXT_PATTERN.test(customerText) ||
+        DIMENSION_CONTEXT_PATTERN.test(session.historySummary || "") ||
+        hasPhotoContext(session, customerText)
+      ),
+  );
 }
 
 function applyOutput(session, output) {
