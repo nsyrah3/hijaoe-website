@@ -93,6 +93,92 @@ test("tells DeepSeek not to repeat the intro once it was shown", () => {
   assert.match(prompt, /jangan ulangi intro/i);
 });
 
+test("sends contextual lead guidance for linear or area services", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Pagar rumah",
+      location: "Gowa",
+    },
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["saya mau buat pagar rumah di gowa"],
+  });
+  const payload = JSON.parse(messages[1].content);
+
+  assert.equal(payload.leadGuidance.serviceKind, "linear_or_area");
+  assert.deepEqual(payload.leadGuidance.missingRequiredFields, ["name"]);
+  assert.match(
+    payload.leadGuidance.suggestedNextQuestions.join(" "),
+    /ukuran|panjang|area|foto|nama/i,
+  );
+  assert.match(
+    payload.leadGuidance.avoidQuestions.join(" "),
+    /jumlah|unit|set/i,
+  );
+});
+
+test("sends quantity guidance for unit based services", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja & Kursi Sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["saya mau meja kursi sekolah di tamalanrea"],
+  });
+  const payload = JSON.parse(messages[1].content);
+
+  assert.equal(payload.leadGuidance.serviceKind, "unit_based");
+  assert.match(
+    payload.leadGuidance.suggestedNextQuestions.join(" "),
+    /jumlah|unit|set/i,
+  );
+  assert.doesNotMatch(
+    payload.leadGuidance.avoidQuestions.join(" "),
+    /jumlah|unit|set/i,
+  );
+});
+
+test("guides DeepSeek to confirm when minimum lead data is complete", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      name: "Nasroh",
+      service: "Pagar rumah",
+      location: "Gowa",
+      dimensions: "Belum ditentukan",
+      photoReferences: "Tidak ada referensi foto",
+    },
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["atas nama nasroh"],
+  });
+  const payload = JSON.parse(messages[1].content);
+
+  assert.equal(payload.leadGuidance.readyToConfirm, true);
+  assert.equal(payload.leadGuidance.suggestedNextStep, "confirm_lead");
+  assert.deepEqual(payload.leadGuidance.missingRequiredFields, []);
+  assert.match(
+    payload.leadGuidance.avoidQuestions.join(" "),
+    /jangan paksa data opsional/i,
+  );
+});
+
 test("falls back when DeepSeek returns invalid JSON", async () => {
   const result = await runDeepSeekConversation({
     session: createSession("628111"),
@@ -377,6 +463,37 @@ test("does not ask quantity for linear or area work like fences", async () => {
     "Baik Kak, untuk pagar rumahnya butuh berapa jumlahnya?",
   );
   assert.doesNotMatch(result.messages[0], /jumlah|berapa unit|berapa set/i);
+  assert.match(result.messages[0], /ukuran|panjang|area|foto/i);
+});
+
+test("does not treat kitchen set as unit quantity work", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Kitchen set",
+      location: "Makassar",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["saya mau kitchen set di makassar"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, untuk kitchen setnya butuh berapa set?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin membuat kitchen set di Makassar.",
+      }),
+  });
+
+  assert.notEqual(result.messages[0], "Baik Kak, untuk kitchen setnya butuh berapa set?");
+  assert.doesNotMatch(result.messages[0], /berapa set|jumlah|unit/i);
   assert.match(result.messages[0], /ukuran|panjang|area|foto/i);
 });
 

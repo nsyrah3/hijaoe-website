@@ -73,7 +73,7 @@ const CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN =
 const QUANTITY_REQUEST_PATTERN =
   /\bberapa\s+(?:jumlah|banyak|unit|set|buah|pcs|item)\b|\bjumlah(?:nya)?\b|\bbutuh\s+berapa\b/i;
 const UNIT_BASED_SERVICE_PATTERN =
-  /\b(?:meja|kursi|bangku|lemari|rak|kabinet|furnitur|furniture|unit|set)\b/i;
+  /\b(?:meja|kursi|bangku|lemari|rak|kabinet|furnitur|furniture)\b/i;
 const LINEAR_OR_AREA_SERVICE_PATTERN =
   /\b(?:pagar|kanopi|railing|plafon|partisi|aluminium|alumunium|kaca|kusen|pintu|jendela|atap|baja ringan|kitchen set|dapur|teras|dinding)\b/i;
 
@@ -220,6 +220,9 @@ export function buildConversationMessages({ session, messages }) {
         "Jangan meminta nomor, kontak, WA, telepon, atau HP karena nomor WhatsApp sudah tersedia dari chat.",
         "Jika data.name sudah terisi, jangan minta nama lengkap atau nama pemesan lagi.",
         "Jika pelanggan meminta kamu menentukan ukuran atau detail teknis, jangan menentukan sendiri; katakan admin HIJAOE akan bantu sesuaikan dari referensi dan kebutuhan.",
+        "Gunakan leadGuidance sebagai arahan utama untuk memilih pertanyaan berikutnya.",
+        "Ikuti suggestedNextStep dan suggestedNextQuestions, dan jangan menanyakan hal yang ada di avoidQuestions.",
+        "Jika leadGuidance.readyToConfirm true, jangan memaksa data opsional lagi; tampilkan ringkasan atau minta konfirmasi singkat.",
         "Kalau pelanggan tanya harga, negosiasi, komplain, minta admin, atau minta jadwal pasti, set handoff true.",
         "Ekstrak data yang sudah jelas disebut pelanggan dan jangan tanya ulang data yang sudah ada.",
         "Jika data kurang, tanyakan satu hal utama yang paling masuk akal.",
@@ -235,10 +238,145 @@ export function buildConversationMessages({ session, messages }) {
           data: session.data,
           historySummary: session.historySummary || "",
         },
+        leadGuidance: buildLeadGuidance({ session, messages }),
         customerMessages: messages,
       }),
     },
   ];
+}
+
+function buildLeadGuidance({ session, messages }) {
+  const data = {
+    ...EMPTY_CUSTOMER_DATA,
+    ...(session?.data || {}),
+  };
+  const customerText = messages.map((message) => String(message || "").trim())
+    .filter(Boolean)
+    .join("\n");
+  const serviceText = [
+    data.service,
+    session?.historySummary || "",
+    customerText,
+  ].join("\n");
+  const serviceKind = classifyServiceKind(serviceText);
+  const missingRequiredFields = requiredLeadFields(data);
+  const readyToConfirm = missingRequiredFields.length === 0;
+
+  return {
+    serviceKind,
+    missingRequiredFields,
+    optionalFieldStatus: {
+      dimensions: leadFieldStatus(data.dimensions),
+      material: leadFieldStatus(data.material),
+      targetTime: leadFieldStatus(data.targetTime),
+      photoReferences: leadFieldStatus(data.photoReferences),
+      email: leadFieldStatus(data.email),
+    },
+    readyToConfirm,
+    suggestedNextStep: readyToConfirm
+      ? "confirm_lead"
+      : "ask_one_contextual_question",
+    suggestedNextQuestions: suggestedNextQuestions({
+      data,
+      serviceKind,
+      missingRequiredFields,
+      readyToConfirm,
+    }),
+    avoidQuestions: avoidQuestions({
+      data,
+      serviceKind,
+      readyToConfirm,
+    }),
+  };
+}
+
+function classifyServiceKind(serviceText) {
+  if (LINEAR_OR_AREA_SERVICE_PATTERN.test(serviceText)) {
+    return "linear_or_area";
+  }
+  if (UNIT_BASED_SERVICE_PATTERN.test(serviceText)) {
+    return "unit_based";
+  }
+  return "unknown";
+}
+
+function requiredLeadFields(data) {
+  return [
+    ["service", data.service],
+    ["location", data.location],
+    ["name", data.name],
+  ]
+    .filter(([, value]) => !String(value || "").trim())
+    .map(([key]) => key);
+}
+
+function leadFieldStatus(value) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "missing";
+  }
+  if (/belum ditentukan|tidak ada referensi foto/i.test(text)) {
+    return "deferred_or_absent";
+  }
+  return "provided";
+}
+
+function suggestedNextQuestions({
+  data,
+  serviceKind,
+  missingRequiredFields,
+  readyToConfirm,
+}) {
+  if (readyToConfirm) {
+    return ["Tampilkan ringkasan kebutuhan dan minta konfirmasi singkat."];
+  }
+
+  const questions = [];
+  if (missingRequiredFields.includes("service")) {
+    questions.push("Tanyakan kebutuhan atau jenis pekerjaan utama.");
+  }
+  if (missingRequiredFields.includes("location")) {
+    questions.push("Tanyakan lokasi pengerjaan.");
+  }
+
+  const hasScopeData = Boolean(
+    data.dimensions.trim() ||
+      data.material.trim() ||
+      data.photoReferences.trim(),
+  );
+  if (!hasScopeData && data.service.trim() && data.location.trim()) {
+    if (serviceKind === "unit_based") {
+      questions.push("Tanyakan jumlah/unit/set, ukuran, atau foto/model; pilih satu yang paling natural.");
+    } else if (serviceKind === "linear_or_area") {
+      questions.push("Tanyakan ukuran, panjang area, foto lokasi, atau model; pilih satu yang paling natural.");
+    } else {
+      questions.push("Tanyakan ukuran, jumlah jika relevan, foto/model, atau detail kebutuhan; pilih satu yang paling natural.");
+    }
+  }
+
+  if (missingRequiredFields.includes("name")) {
+    questions.push("Tanyakan nama hanya setelah kebutuhan utama cukup jelas.");
+  }
+
+  return questions;
+}
+
+function avoidQuestions({ data, serviceKind, readyToConfirm }) {
+  const avoid = [];
+  if (serviceKind === "linear_or_area") {
+    avoid.push("Jangan tanya jumlah, unit, atau set untuk pekerjaan area/linear.");
+  }
+  if (data.photoReferences.trim()) {
+    avoid.push("Jangan minta foto lagi.");
+  }
+  if (data.name.trim()) {
+    avoid.push("Jangan minta nama atau kontak lagi.");
+  }
+  if (readyToConfirm) {
+    avoid.push("jangan paksa data opsional yang belum ada.");
+  }
+  avoid.push("Jangan minta nomor WhatsApp, telepon, HP, atau kontak.");
+  return avoid;
 }
 
 export function normalizeDeepSeekConversationOutput(raw) {

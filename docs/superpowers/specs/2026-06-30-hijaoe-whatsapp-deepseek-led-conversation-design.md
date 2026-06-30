@@ -64,6 +64,22 @@ introShown
 
 `introShown` menandai apakah pelanggan sudah mendapat pembuka transparan bahwa percakapan dibantu asisten digital atau AI agent HIJAOE untuk mencatat kebutuhan. Intro hanya dipakai pada balasan DeepSeek pertama, lalu tidak diulang.
 
+## Lead Guidance Terstruktur
+
+Selain `session` dan `customerMessages`, program mengirim `leadGuidance` ke DeepSeek. Guidance ini menjadi peta keputusan agar model tidak menebak sendiri urutan pertanyaan.
+
+`leadGuidance` berisi:
+
+- `serviceKind`: `unit_based`, `linear_or_area`, atau `unknown`;
+- `missingRequiredFields`: field wajib yang belum terisi, yaitu `service`, `location`, atau `name`;
+- `optionalFieldStatus`: status field opsional, misalnya `missing`, `provided`, atau `deferred_or_absent`;
+- `readyToConfirm`: `true` jika data minimal sudah cukup untuk konfirmasi;
+- `suggestedNextStep`: `ask_one_contextual_question` atau `confirm_lead`;
+- `suggestedNextQuestions`: arahan pertanyaan yang paling masuk akal;
+- `avoidQuestions`: hal yang tidak boleh ditanyakan lagi.
+
+Untuk pekerjaan satuan seperti meja, kursi, lemari, rak, dan furnitur, guidance boleh menyarankan pertanyaan jumlah/unit/set. Untuk pekerjaan area atau linear seperti pagar, kanopi, railing, plafon, partisi, aluminium kaca, kitchen set, dan pekerjaan sejenis, guidance melarang pertanyaan jumlah/unit/set dan mengarahkan ke ukuran, panjang area, foto lokasi, model, atau nama.
+
 ## Output DeepSeek
 
 DeepSeek harus membalas JSON valid:
@@ -111,6 +127,8 @@ Balasan harus:
 - menyesuaikan pertanyaan lanjutan dengan jenis pekerjaan: untuk meja, kursi, lemari, rak, atau furnitur satuan boleh tanya jumlah/unit/set; untuk pagar, kanopi, railing, plafon, partisi, aluminium kaca, kitchen set, dan pekerjaan area/linear tanyakan ukuran, panjang area, foto lokasi, model, atau nama;
 - boleh minta foto kalau relevan, tetapi tidak memaksa;
 - jika foto sudah diterima, tidak boleh meminta foto lagi dan harus mengakui foto itu sebagai referensi;
+- mengikuti `leadGuidance` untuk memilih pertanyaan berikutnya;
+- konfirmasi ringkasan ketika `leadGuidance.readyToConfirm` true, bukan memaksa data opsional lagi;
 - menampilkan ringkasan saat data cukup dan meminta konfirmasi pelanggan.
 
 Balasan tidak boleh:
@@ -166,6 +184,8 @@ Test yang dibutuhkan:
 - output yang mengarang ukuran standar atau angka dimensi tanpa input pelanggan ditolak;
 - output yang menanyakan jumlah untuk pekerjaan area/linear seperti pagar ditolak;
 - output yang menanyakan jumlah untuk pekerjaan satuan seperti meja kursi tetap boleh;
+- prompt DeepSeek membawa `leadGuidance` berisi tipe layanan, field wajib yang kurang, saran pertanyaan, dan larangan pertanyaan;
+- `leadGuidance.readyToConfirm` mengarahkan DeepSeek untuk konfirmasi saat data minimal sudah lengkap;
 - output harga atau janji jadwal ditolak;
 - output yang menyebut bot/template/otomasi ditolak;
 - lead hanya sync setelah konfirmasi;
