@@ -247,3 +247,21 @@ test("AI service visuals are not presented as completed customer projects", asyn
     assert.doesNotMatch(html, /hasil proyek|proyek pelanggan|hasil pekerjaan HIJAOE/i);
   }
 });
+
+test("school furniture page renders model catalog examples", async () => {
+  const html = await readFile(
+    path.join(root, "layanan", "meja-kursi-sekolah-makassar.html"),
+    "utf8",
+  );
+  const cardCount = (html.match(/class="service-model-card"/g) || []).length;
+
+  assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, />Katalog model</);
+  assert.match(html, />Contoh model yang bisa dibuat</);
+  assert.match(html, /contoh model pesanan/i);
+  assert.equal(cardCount, 10);
+  assert.match(html, /Meja Siswa Single Kayu/);
+  assert.match(html, /Bangku Panjang Sekolah Kayu/);
+  assert.match(html, /Tanyakan model ini/);
+  assert.match(html, /meja-kursi-sekolah\/meja-siswa-single-kayu\.webp/);
+});

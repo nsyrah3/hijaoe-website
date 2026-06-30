@@ -9,6 +9,7 @@ import {
   business,
   processSteps,
 } from "../assets/js/site-data.js";
+import { getServiceModelCatalog } from "../assets/js/service-catalog-data.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = path.join(root, "layanan");
@@ -52,9 +53,10 @@ ${urls
 `;
 }
 
-function buildWhatsAppUrl(serviceName) {
+function buildWhatsAppUrl(serviceName, modelName = "") {
+  const topic = modelName ? `${serviceName}, model ${modelName}` : serviceName;
   const message =
-    `Halo HIJAOE, saya ingin konsultasi tentang ${serviceName}. ` +
+    `Halo HIJAOE, saya ingin konsultasi tentang ${topic}. ` +
     "Lokasi pengerjaan saya di ...";
   return `https://wa.me/${business.phoneInternational}?text=${encodeURIComponent(message)}`;
 }
@@ -118,6 +120,60 @@ function renderProcess() {
             </li>`,
     )
     .join("");
+}
+
+function renderServiceModelCards(page, models) {
+  return models
+    .map(
+      (modelItem) => `<article class="service-model-card">
+              <img
+                src="/${escapeHtml(modelItem.image)}"
+                alt="${escapeHtml(modelItem.alt)}"
+                loading="lazy"
+                width="960"
+                height="720"
+              >
+              <div class="service-model-card__body">
+                <h3>${escapeHtml(modelItem.title)}</h3>
+                <p>${escapeHtml(modelItem.description)}</p>
+                <a
+                  href="${buildWhatsAppUrl(page.heading, modelItem.whatsappLabel)}"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Tanyakan model ini
+                  <i data-lucide="message-circle" aria-hidden="true"></i>
+                </a>
+              </div>
+            </article>`,
+    )
+    .join("");
+}
+
+function renderServiceModelCatalog(page) {
+  const models = getServiceModelCatalog(page.slug);
+
+  if (models.length === 0) {
+    return "";
+  }
+
+  return `
+      <section class="section service-model-catalog" aria-labelledby="service-model-catalog-${escapeHtml(page.slug)}">
+        <div class="container">
+          <header class="service-model-catalog__header">
+            <div>
+              <p class="eyebrow eyebrow--dark">Katalog model</p>
+              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">Contoh model yang bisa dibuat</h2>
+            </div>
+            <p>
+              Gambar berikut adalah contoh model pesanan. Ukuran, bahan,
+              warna, dan detail akhir tetap menyesuaikan lokasi, kebutuhan,
+              dan budget.
+            </p>
+          </header>
+          <div class="service-model-catalog__grid">${renderServiceModelCards(page, models)}</div>
+        </div>
+      </section>`;
 }
 
 function getRelatedPages(page) {
@@ -315,7 +371,7 @@ function renderPage(page) {
           </aside>
         </div>
       </section>
-
+${renderServiceModelCatalog(page)}
       <section class="section section--dark service-page__process">
         <div class="container">
           <p class="eyebrow"><span></span>Alur pemesanan</p>

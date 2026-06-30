@@ -87,3 +87,22 @@ test("error page and service directory have dedicated layout rules", () => {
   assert.match(styles, /\.error-page__main\s*\{/);
   assert.match(styles, /\.service-directory\s*\{/);
 });
+
+test("service model catalog has stable responsive cards", () => {
+  assert.match(
+    styles,
+    /\.service-model-catalog__grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /\.service-model-card img\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;[^}]*object-fit:\s*cover;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 1100px\)[\s\S]*?\.service-model-catalog__grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-catalog__grid\s*\{[^}]*grid-template-columns:\s*1fr;/,
+  );
+});
