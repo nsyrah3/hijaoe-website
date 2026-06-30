@@ -346,6 +346,71 @@ test("does not invent material availability or technical decisions", async () =>
   assert.match(result.messages[0], /admin HIJAOE.*cek|cek.*admin HIJAOE/i);
 });
 
+test("does not ask quantity for linear or area work like fences", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Pagar rumah",
+      location: "Gowa",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["saya mau buat pagar rumah di gowa"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, untuk pagar rumahnya butuh berapa jumlahnya?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin membuat pagar rumah di Gowa.",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Baik Kak, untuk pagar rumahnya butuh berapa jumlahnya?",
+  );
+  assert.doesNotMatch(result.messages[0], /jumlah|berapa unit|berapa set/i);
+  assert.match(result.messages[0], /ukuran|panjang|area|foto/i);
+});
+
+test("allows quantity questions for unit based furniture work", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja & Kursi Sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const reply = "Baik Kak, untuk meja kursi sekolahnya butuh berapa set?";
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["saya mau meja kursi sekolah di tamalanrea"],
+    complete: async () =>
+      JSON.stringify({
+        reply,
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin meja kursi sekolah di Tamalanrea.",
+      }),
+  });
+
+  assert.equal(result.messages[0], reply);
+});
+
 test("does not ask for contact after the customer name is already known", async () => {
   const session = {
     ...createSession("628111"),

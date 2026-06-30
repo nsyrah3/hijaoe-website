@@ -28,6 +28,8 @@ const NAME_ONLY_FALLBACK_REPLY =
   "Boleh tahu atas nama siapa untuk catatan, Kak?";
 const TECHNICAL_DECISION_FALLBACK_REPLY =
   "Baik Kak, fotonya saya catat sebagai referensi. Untuk ukuran pastinya nanti admin HIJAOE bantu tentukan sesuai model dan kebutuhan Kakak.";
+const LINEAR_OR_AREA_SCOPE_FALLBACK_REPLY =
+  "Baik Kak. Kalau ada, boleh kirim perkiraan ukuran, panjang area, atau foto lokasinya supaya kebutuhan awalnya bisa saya catat.";
 const RESTRICTED_HANDOFF_REPLY =
   "Siap Kak, untuk bagian itu saya teruskan ke admin HIJAOE biar dicek langsung.";
 const CONFIRMATION_WORDS = new Set(["ya", "iya", "benar", "sudah benar"]);
@@ -68,6 +70,12 @@ const UNSUPPORTED_AVAILABILITY_CLAIM_PATTERN =
   /\btersedia\b.*\b(?:bahan|warna|pilihan|stok|model)\b|\b(?:bahan|warna|pilihan|stok|model)\b.*\btersedia\b|\bkami\s+(?:punya|menyediakan)\b|\b(?:kayu jati|multipleks|besi hollow|aluminium)\b/i;
 const CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN =
   /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b|\bnama lengkap\b|\bnama pemesan\b|\batas nama siapa\b/i;
+const QUANTITY_REQUEST_PATTERN =
+  /\bberapa\s+(?:jumlah|banyak|unit|set|buah|pcs|item)\b|\bjumlah(?:nya)?\b|\bbutuh\s+berapa\b/i;
+const UNIT_BASED_SERVICE_PATTERN =
+  /\b(?:meja|kursi|bangku|lemari|rak|kabinet|furnitur|furniture|unit|set)\b/i;
+const LINEAR_OR_AREA_SERVICE_PATTERN =
+  /\b(?:pagar|kanopi|railing|plafon|partisi|aluminium|alumunium|kaca|kusen|pintu|jendela|atap|baja ringan|kitchen set|dapur|teras|dinding)\b/i;
 
 export async function runDeepSeekConversation({
   session,
@@ -201,6 +209,7 @@ export function buildConversationMessages({ session, messages }) {
         "Kamu bukan sales, katalog, atau product knowledge base; tugasmu hanya mencatat kebutuhan dan pertanyaan pelanggan.",
         "Jika pelanggan bertanya detail yang tidak ada di session atau customerMessages, jangan mengarang jawaban; catat pertanyaannya dan katakan admin HIJAOE perlu cek detail itu.",
         "Jika beberapa data kurang, pilih satu pertanyaan lanjutan yang paling penting untuk melengkapi lead.",
+        "Pertanyaan lanjutan harus sesuai jenis pekerjaan: untuk meja, kursi, lemari, rak, atau furnitur satuan boleh tanya jumlah/unit/set; untuk pagar, kanopi, railing, plafon, partisi, aluminium kaca, kitchen set, atau pekerjaan area/linear jangan tanya jumlah, tanyakan ukuran, panjang area, foto lokasi, model, atau nama.",
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
         "Jangan memberi kepastian survei, produksi, pemasangan, atau tanggal selesai.",
@@ -419,6 +428,11 @@ function getRestrictedOutputReason(output, context) {
     return "unsupported_availability_claim";
   }
   if (
+    asksQuantityForLinearOrAreaWork(output.reply, context)
+  ) {
+    return "linear_or_area_quantity_request";
+  }
+  if (
     CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN.test(output.reply) &&
     (context.session.data.name.trim() || /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b/i.test(output.reply))
   ) {
@@ -439,6 +453,9 @@ function fallbackReplyForRestriction(reason) {
   }
   if (reason === "unsupported_availability_claim") {
     return UNSUPPORTED_DETAIL_FALLBACK_REPLY;
+  }
+  if (reason === "linear_or_area_quantity_request") {
+    return LINEAR_OR_AREA_SCOPE_FALLBACK_REPLY;
   }
   if (reason === "unneeded_contact_or_name") {
     return NAME_ONLY_FALLBACK_REPLY;
@@ -479,6 +496,21 @@ function hasUnsupportedDimensionClaim(text, { session, customerText }) {
     }
   }
   return false;
+}
+
+function asksQuantityForLinearOrAreaWork(reply, { session, customerText }) {
+  if (!QUANTITY_REQUEST_PATTERN.test(reply)) {
+    return false;
+  }
+  const serviceText = [
+    session.data.service,
+    session.historySummary || "",
+    customerText,
+  ].join("\n");
+  return Boolean(
+    LINEAR_OR_AREA_SERVICE_PATTERN.test(serviceText) &&
+      !UNIT_BASED_SERVICE_PATTERN.test(serviceText),
+  );
 }
 
 function extractDimensionNumbers(text) {
