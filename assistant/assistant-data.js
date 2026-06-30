@@ -1,32 +1,25 @@
 export const OPENING_MESSAGE =
-  "Halo, Kak. Saya Asisten HIJAOE. Saya bantu catat kebutuhan awalnya dulu, lalu admin kami akan lanjutkan.";
+  "Halo Kak, bisa. Mau bikin atau kerjakan apa?";
 
 export const HANDOFF_MESSAGE =
-  "Baik, Kak. Saya teruskan ke admin HIJAOE. Admin membalas Senin-Sabtu pukul 08.00-17.00.";
+  "Siap Kak, saya teruskan ke admin HIJAOE biar dicek lanjut.";
 
 export const COMPLETION_MESSAGE =
-  "Siap, Kak. Sudah saya catat. Admin HIJAOE akan cek kebutuhan dan fotonya dulu sebelum membahas harga serta jadwal.";
+  "Siap Kak, sudah saya catat. Admin nanti cek detailnya dulu ya.";
 
 export const FIELD_DEFINITIONS = [
-  {
-    state: "name",
-    key: "name",
-    label: "Nama",
-    prompt: "Boleh tahu namanya, Kak?",
-    required: true,
-  },
   {
     state: "service",
     key: "service",
     label: "Pekerjaan",
-    prompt: "Kakak mau buat atau kerjakan apa? Ceritakan singkat saja.",
+    prompt: "Mau bikin atau kerjakan apa, Kak?",
     required: true,
   },
   {
     state: "location",
     key: "location",
     label: "Lokasi",
-    prompt: "Lokasi pengerjaan atau pengirimannya di daerah mana, Kak?",
+    prompt: "Lokasinya di daerah mana, Kak?",
     required: true,
   },
   {
@@ -34,36 +27,44 @@ export const FIELD_DEFINITIONS = [
     key: "dimensions",
     label: "Ukuran",
     prompt:
-      "Kalau sudah ada, berapa ukuran perkiraannya? Kalau belum tahu, bilang belum tahu juga tidak apa-apa.",
+      "Kalau sudah ada, berapa ukuran perkiraannya? Kalau belum tahu, tidak apa-apa.",
     required: false,
   },
   {
     state: "material",
     key: "material",
     label: "Bahan atau model",
-    prompt: "Ada bahan, model, atau contoh yang diinginkan, Kak?",
+    prompt: "Ada bahan, model, atau contoh yang diinginkan?",
     required: false,
   },
   {
     state: "target_time",
     key: "targetTime",
     label: "Target waktu",
-    prompt: "Rencananya ingin dikerjakan atau selesai sekitar kapan?",
+    prompt: "Rencananya mau dikerjakan sekitar kapan?",
     required: false,
   },
   {
     state: "photo",
     key: "photoReferences",
     label: "Foto referensi",
-    prompt: "Bisa kirim foto lokasi atau contoh modelnya. Kalau belum ada, tulis lewati.",
+    prompt:
+      "Kalau ada foto lokasi atau contoh model, boleh dikirim. Kalau belum ada, ketik lewati.",
     required: false,
+  },
+  {
+    state: "name",
+    key: "name",
+    label: "Nama",
+    prompt: "Boleh tahu nama Kakak untuk catatan admin?",
+    required: true,
   },
   {
     state: "email",
     key: "email",
     label: "Email",
     prompt:
-      "Kalau berkenan, boleh kirim email untuk menerima katalog atau penawaran. Kalau tidak, tulis lewati.",
+      "Kalau berkenan, boleh kirim email untuk katalog atau penawaran. Kalau tidak, ketik lewati.",
     required: false,
   },
   {
@@ -71,7 +72,7 @@ export const FIELD_DEFINITIONS = [
     key: "emailMarketingConsent",
     label: "Izin email promosi",
     prompt:
-      "Apakah Kakak bersedia menerima informasi dan penawaran HIJAOE melalui email? Jawab ya atau tidak.",
+      "Kakak bersedia menerima info dan penawaran HIJAOE lewat email? Jawab ya atau tidak.",
     required: false,
   },
 ];

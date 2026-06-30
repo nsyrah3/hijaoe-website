@@ -47,12 +47,14 @@ export function createSession(whatsappNumber = "") {
 }
 
 export function startConversation(session) {
+  const firstField = FIELD_DEFINITIONS[0];
+
   return {
     session: {
       ...session,
-      state: "name",
+      state: firstField.state,
     },
-    messages: [OPENING_MESSAGE, FIELD_BY_STATE.get("name").prompt],
+    messages: [OPENING_MESSAGE],
     lead: null,
   };
 }

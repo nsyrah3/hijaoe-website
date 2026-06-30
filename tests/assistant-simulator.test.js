@@ -4,13 +4,13 @@ import { runSimulator } from "../assistant/simulator.js";
 
 test("simulator completes a scripted conversation", async () => {
   const replies = [
-    "Rina",
     "Pagar besi",
     "Panakkukang",
     "4 x 2 meter",
     "Besi hollow",
     "Bulan depan",
     "lewati",
+    "Rina",
     "lewati",
     "ya",
   ];
@@ -25,19 +25,20 @@ test("simulator completes a scripted conversation", async () => {
   assert.equal(result.session.state, "handoff");
   assert.equal(result.lead.customer_name, "Rina");
   assert.equal(result.lead.service_type, "Pagar besi");
-  assert.match(output.join("\n"), /Asisten HIJAOE/);
+  assert.doesNotMatch(output.join("\n"), /Asisten|\bAI\b|\bbot\b/i);
+  assert.match(output.join("\n"), /Mau bikin atau kerjakan apa/);
   assert.match(output.join("\n"), /Ini ringkasannya|Ringkasan kebutuhan awal/);
 });
 
 test("simulator can run optional DeepSeek analysis without changing the flow", async () => {
   const replies = [
-    "Rina",
     "Pagar besi",
     "Panakkukang",
     "4 x 2 meter",
     "Besi hollow",
     "Bulan depan",
     "lewati",
+    "Rina",
     "lewati",
     "ya",
   ];
@@ -70,6 +71,6 @@ test("simulator can run optional DeepSeek analysis without changing the flow", a
   assert.equal(result.session.state, "handoff");
   assert.equal(result.lead.service_type, "Pagar besi");
   assert.equal(analyzed.length, 9);
-  assert.deepEqual(analyzed[0], { state: "name", message: "Rina" });
+  assert.deepEqual(analyzed[0], { state: "service", message: "Pagar besi" });
   assert.match(debug.join("\n"), /DeepSeek: Pelanggan mengisi kebutuhan awal/);
 });

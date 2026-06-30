@@ -4,22 +4,25 @@ import { composeReply } from "../assistant/bot/reply-composer.js";
 
 test("uses a concise DeepSeek rewrite that preserves the question", async () => {
   const result = await composeReply({
-    deterministicMessages: ["Lokasi pengerjaannya di mana, Kak?"],
-    customerMessage: "mau buat kanopi",
-    session: { state: "location", data: { service: "kanopi" } },
-    complete: async () => "Baik, Kak. Lokasi pemasangannya di daerah mana?",
+    deterministicMessages: ["Halo Kak, bisa. Mau bikin atau kerjakan apa?"],
+    customerMessage: "halo",
+    session: { state: "service", data: {} },
+    complete: async () => "Halo Kak, boleh. Mau bikin apa?",
   });
 
   assert.equal(
     result,
-    "Baik, Kak. Lokasi pemasangannya di daerah mana?",
+    "Halo Kak, boleh. Mau bikin apa?",
   );
 });
 
-test("falls back when model adds a price or exact promise", async () => {
+test("falls back when model adds AI wording, a price, or exact promise", async () => {
   const fallback = "Admin kami akan cek kebutuhannya dulu, Kak.";
 
   for (const output of [
+    "Saya asisten HIJAOE, ada yang bisa saya bantu?",
+    "Bot HIJAOE siap membantu, Kak.",
+    "AI kami akan mencatat kebutuhan Kakak.",
     "Harganya sekitar Rp2 juta, Kak.",
     "Pasti selesai hari Senin, Kak.",
     "Kami jamin selesai besok.",
@@ -93,7 +96,7 @@ test("does not send confirmation summaries to DeepSeek", async () => {
 test("does not send sensitive current-message PII to DeepSeek", async () => {
   let captured;
   await composeReply({
-    deterministicMessages: ["Boleh tahu namanya, Kak?"],
+    deterministicMessages: ["Boleh tahu nama Kakak untuk catatan admin?"],
     customerMessage: "Nama saya Ari, 085121508159, ari@example.com",
     session: {
       state: "name",
@@ -106,7 +109,7 @@ test("does not send sensitive current-message PII to DeepSeek", async () => {
     },
     complete: async ({ messages }) => {
       captured = messages;
-      return "Boleh tahu namanya, Kak?";
+      return "Boleh tahu nama Kakak untuk catatan admin?";
     },
   });
 

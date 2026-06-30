@@ -93,9 +93,10 @@ test("first inbound message creates and saves a session", async () => {
   const result = await orchestrator.handleIncoming(incoming());
 
   assert.equal(result.action, "replied");
-  assert.equal(state.sessions.get("628111").state, "name");
+  assert.equal(state.sessions.get("628111").state, "service");
   assert.equal(state.sent.length, 1);
-  assert.match(state.sent[0].text, /Asisten HIJAOE/);
+  assert.doesNotMatch(state.sent[0].text, /Asisten|AI|bot/i);
+  assert.match(state.sent[0].text, /bikin|kerjakan|buat/i);
 });
 
 test("paused and duplicate messages produce no side effects", async () => {
@@ -216,9 +217,10 @@ test("starts a fresh conversation after an expired manual takeover handoff", asy
   );
 
   assert.equal(result.action, "replied");
-  assert.equal(state.sessions.get("628111").state, "name");
+  assert.equal(state.sessions.get("628111").state, "service");
   assert.equal(state.pausedUntil.has("628111"), false);
-  assert.match(state.sent[0].text, /Asisten HIJAOE/);
+  assert.doesNotMatch(state.sent[0].text, /Asisten|AI|bot/i);
+  assert.match(state.sent[0].text, /bikin|kerjakan|buat/i);
 });
 
 test("manual own message pauses only that contact for 24 hours", async () => {
