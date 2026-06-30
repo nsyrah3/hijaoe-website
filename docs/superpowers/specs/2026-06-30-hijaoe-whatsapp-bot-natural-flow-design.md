@@ -24,6 +24,21 @@ Contoh pembuka:
 Halo Kak, bisa. Mau bikin atau kerjakan apa?
 ```
 
+## Peran DeepSeek
+
+DeepSeek dipakai sebagai penulis gaya chat, bukan pengambil keputusan bisnis. Conversation engine tetap menentukan:
+
+- field apa yang sedang dikumpulkan;
+- kapan pertanyaan wajib harus diulang;
+- kapan ringkasan ditampilkan;
+- kapan lead dibuat;
+- kapan percakapan harus handoff ke admin;
+- larangan harga, janji jadwal, diskon, dan klaim kepastian.
+
+Setiap kali engine menghasilkan maksud balasan, DeepSeek boleh menulis ulang menjadi chat admin yang natural. Input ke DeepSeek berisi konteks aman: state percakapan, field yang sedang ditanyakan, ringkasan non-sensitif, dan pesan deterministic yang boleh dijadikan fallback. DeepSeek tidak boleh menerima data sensitif yang tidak diperlukan.
+
+Jika DeepSeek gagal, timeout, menghasilkan jawaban kosong, terlalu panjang, menyebut AI/asisten, menambah harga, menjanjikan jadwal, atau mengubah maksud pertanyaan, sistem memakai fallback pendek yang sudah ditentukan.
+
 ## Alur Data Baru
 
 Urutan pertanyaan menjadi:
@@ -53,9 +68,31 @@ Ringkasan tetap memuat nama, pekerjaan, lokasi, ukuran, bahan atau model, target
 
 Pesan handoff dibuat lebih natural, tetapi tetap aman. Bot tidak menyebut kepastian admin membalas secara berlebihan. Untuk pertanyaan harga, jadwal, komplain, permintaan manusia, atau setelah konfirmasi lead, bot mengirim pesan singkat bahwa admin akan cek dan lanjutkan.
 
-## DeepSeek Rewrite
+## DeepSeek Admin Chat
 
-DeepSeek tetap hanya boleh merapikan teks yang sudah ditentukan sistem. Instruksi rewrite perlu diperbarui agar tidak menulis seperti AI assistant dan tidak memperkenalkan diri sebagai asisten. Guardrail harga, janji jadwal, diskon, dan informasi baru tetap berlaku.
+Instruksi DeepSeek perlu berubah dari sekadar "tulis ulang balasan" menjadi "tulis sebagai admin HIJAOE yang sedang membalas WhatsApp". Model harus:
+
+- membalas singkat, natural, dan tidak kaku;
+- memakai bahasa Indonesia sehari-hari yang tetap sopan;
+- menjaga satu fokus pertanyaan per balasan;
+- tidak memperkenalkan diri sebagai AI, bot, atau asisten;
+- tidak menambahkan informasi bisnis baru;
+- tidak mengubah field yang sedang ditanyakan;
+- tidak memberi harga, kisaran harga, diskon, janji jadwal, atau kepastian pengerjaan.
+
+Contoh target gaya:
+
+```text
+Halo Kak, bisa. Mau bikin atau kerjakan apa?
+```
+
+```text
+Oke Kak. Lokasinya di daerah mana?
+```
+
+```text
+Siap. Kalau ada foto lokasi atau contoh model, boleh dikirim. Kalau belum ada, ketik lewati.
+```
 
 ## Pengujian
 
@@ -63,6 +100,9 @@ Test yang perlu diperbarui atau ditambah:
 
 - percakapan baru langsung menanyakan pekerjaan, bukan nama;
 - field `name` berada setelah `photo`;
+- DeepSeek dipanggil untuk membuat wording natural pada pertanyaan biasa;
+- fallback dipakai saat DeepSeek gagal atau melanggar guardrail;
+- output DeepSeek yang menyebut AI, bot, asisten, harga, atau janji jadwal ditolak;
 - lead tetap berisi nama saat pelanggan mengonfirmasi;
 - ringkasan masih berisi semua field lama;
 - handoff dan completion tetap tidak memberi harga atau janji jadwal;
@@ -73,5 +113,7 @@ Test yang perlu diperbarui atau ditambah:
 - Pembuka tidak menyebut `Asisten HIJAOE`.
 - Bot tidak menanyakan nama di awal.
 - Nama ditanyakan setelah foto atau sebelum email.
-- Balasan terasa seperti admin WhatsApp, pendek, dan tidak terlalu formal.
+- Balasan normal ditulis oleh DeepSeek dengan gaya admin WhatsApp.
+- Engine tetap menentukan alur, validasi, lead, dan handoff.
+- Fallback aman tetap tersedia saat DeepSeek gagal.
 - Semua test otomatis tetap lulus.
