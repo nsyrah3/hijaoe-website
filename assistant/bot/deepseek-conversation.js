@@ -31,6 +31,8 @@ const TECHNICAL_DECISION_FALLBACK_REPLY =
   "Baik Kak, fotonya saya catat sebagai referensi. Untuk ukuran pastinya nanti admin HIJAOE bantu tentukan sesuai model dan kebutuhan Kakak.";
 const LINEAR_OR_AREA_SCOPE_FALLBACK_REPLY =
   "Baik Kak. Kalau ada, boleh kirim perkiraan ukuran, panjang area, atau foto lokasinya supaya kebutuhan awalnya bisa saya catat.";
+const PROJECT_LOCATION_FALLBACK_REPLY =
+  "Lokasi rumahnya di daerah mana, Kak?";
 const RESTRICTED_HANDOFF_REPLY =
   "Siap Kak, untuk bagian itu saya teruskan ke admin HIJAOE biar dicek langsung.";
 const CONFIRMATION_WORDS = new Set(["ya", "iya", "benar", "sudah benar"]);
@@ -86,6 +88,10 @@ const CUSTOMER_DETAIL_QUESTION_TOPIC_PATTERN =
   /\b(?:bahan|warna|model|stok|pilihan|ukuran|custom|tersedia|ready|finishing|spesifikasi)\b/i;
 const QUESTION_INTENT_PATTERN =
   /\?|(?:apa|apakah|bisa|boleh|emang|memang|gimana|bagaimana|berapa|tersedia|ready)\b/i;
+const AMBIGUOUS_PROJECT_LOCATION_REPLY_PATTERN =
+  /\b(?:pagar|kanopi|plafon|partisi|kitchen set|rumah)\b.*\barea\s+mana\b|\bdipasang\s+(?:di\s+)?mana\b|\bpasang(?:nya)?\s+(?:di\s+)?mana\b/i;
+const CLEAR_PROJECT_LOCATION_REPLY_PATTERN =
+  /\b(?:lokasi|alamat|daerah)\s+(?:rumah|proyek|pengerjaan|lokasi)\b|\blokasi\s+pengerjaan\b/i;
 
 export async function runDeepSeekConversation({
   session,
@@ -176,7 +182,7 @@ export async function runDeepSeekConversation({
         };
       }
       return fallback(
-        currentSession,
+        sessionForRestrictedOutput(currentSession, output, restrictedOutputReason),
         fallbackReplyForRestriction(restrictedOutputReason),
       );
     }
@@ -234,6 +240,8 @@ export function buildConversationMessages({ session, messages }) {
         "Jika pelanggan bertanya detail yang tidak ada di session atau customerMessages, jangan mengarang jawaban; isi customerQuestions dengan pertanyaan itu, lalu katakan admin HIJAOE perlu cek detail itu.",
         "Jika beberapa data kurang, pilih satu pertanyaan lanjutan yang paling penting untuk melengkapi lead.",
         "Pertanyaan lanjutan harus sesuai jenis pekerjaan: untuk meja, kursi, lemari, rak, atau furnitur satuan boleh tanya jumlah/unit/set; untuk pagar, kanopi, railing, plafon, partisi, aluminium kaca, kitchen set, atau pekerjaan area/linear jangan tanya jumlah, tanyakan ukuran, panjang area, foto lokasi, model, atau nama.",
+        "Saat meminta lokasi proyek, maksudnya daerah/alamat rumah atau lokasi pengerjaan customer; jangan menulis seolah menanyakan posisi pemasangan di rumah.",
+        "Untuk pekerjaan rumah seperti pagar, gunakan wording seperti \"Lokasi rumahnya di daerah mana, Kak?\".",
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
         "Jangan memberi kepastian survei, produksi, pemasangan, atau tanggal selesai.",
@@ -410,7 +418,7 @@ function suggestedNextQuestions({
     questions.push("Tanyakan kebutuhan atau jenis pekerjaan utama.");
   }
   if (missingRequiredFields.includes("location")) {
-    questions.push("Tanyakan lokasi pengerjaan.");
+    questions.push("Tanyakan lokasi rumah/proyek atau lokasi pengerjaan di daerah mana, bukan posisi pemasangan di rumah.");
   }
 
   const hasScopeData = Boolean(
@@ -439,6 +447,9 @@ function avoidQuestions({ data, serviceKind, readyToConfirm }) {
   const avoid = [];
   if (serviceKind === "linear_or_area") {
     avoid.push("Jangan tanya jumlah, unit, atau set untuk pekerjaan area/linear.");
+  }
+  if (!data.location.trim()) {
+    avoid.push("Jangan tanya 'pagar/kanopi/plafon dipasang di mana' atau 'area mana' tanpa menyebut lokasi rumah/proyek/pengerjaan.");
   }
   if (data.photoReferences.trim()) {
     avoid.push("Jangan minta foto lagi.");
@@ -629,6 +640,28 @@ function fallback(session, reply = FALLBACK_REPLY) {
   };
 }
 
+function sessionForRestrictedOutput(session, output, reason) {
+  if (reason !== "ambiguous_project_location_request") {
+    return session;
+  }
+
+  const nextData = { ...session.data };
+  for (const key of ["service", "customerQuestions"]) {
+    const value = output.dataPatch[key];
+    if (typeof value === "string" && value.trim()) {
+      nextData[key] = value.trim();
+    }
+  }
+
+  return {
+    ...session,
+    data: nextData,
+    historySummary: output.historySummary || session.historySummary || "",
+    failedUnderstanding: 0,
+    introShown: session.introShown || Boolean(output.reply),
+  };
+}
+
 function handoff(session, reason) {
   const nextSession = {
     ...session,
@@ -679,6 +712,9 @@ function getRestrictedOutputReason(output, context) {
   ) {
     return "linear_or_area_quantity_request";
   }
+  if (asksAmbiguousProjectLocation(output.reply, context)) {
+    return "ambiguous_project_location_request";
+  }
   if (
     CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN.test(output.reply) &&
     (context.session.data.name.trim() || /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b/i.test(output.reply))
@@ -703,6 +739,9 @@ function fallbackReplyForRestriction(reason) {
   }
   if (reason === "linear_or_area_quantity_request") {
     return LINEAR_OR_AREA_SCOPE_FALLBACK_REPLY;
+  }
+  if (reason === "ambiguous_project_location_request") {
+    return PROJECT_LOCATION_FALLBACK_REPLY;
   }
   if (reason === "unneeded_contact_or_name") {
     return NAME_ONLY_FALLBACK_REPLY;
@@ -758,6 +797,22 @@ function asksQuantityForLinearOrAreaWork(reply, { session, customerText }) {
     LINEAR_OR_AREA_SERVICE_PATTERN.test(serviceText) &&
       !UNIT_BASED_SERVICE_PATTERN.test(serviceText),
   );
+}
+
+function asksAmbiguousProjectLocation(reply, { session, customerText }) {
+  if (
+    session.data.location.trim() ||
+    !AMBIGUOUS_PROJECT_LOCATION_REPLY_PATTERN.test(reply) ||
+    CLEAR_PROJECT_LOCATION_REPLY_PATTERN.test(reply)
+  ) {
+    return false;
+  }
+  const serviceText = [
+    session.data.service,
+    session.historySummary || "",
+    customerText,
+  ].join("\n");
+  return Boolean(LINEAR_OR_AREA_SERVICE_PATTERN.test(serviceText));
 }
 
 function extractDimensionNumbers(text) {

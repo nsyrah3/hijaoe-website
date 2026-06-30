@@ -126,6 +126,31 @@ test("sends contextual lead guidance for linear or area services", () => {
   );
 });
 
+test("asks project location as house or work address, not installation position", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["saya mau bikin pagar untuk rumah saya"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Tentu, Kak. Mau bikin pagar untuk rumah di area mana, ya?",
+        dataPatch: { service: "Pagar rumah" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin membuat pagar untuk rumah.",
+      }),
+  });
+
+  assert.equal(result.session.data.service, "Pagar rumah");
+  assert.notEqual(
+    result.messages[0],
+    "Tentu, Kak. Mau bikin pagar untuk rumah di area mana, ya?",
+  );
+  assert.match(result.messages[0], /lokasi rumah|lokasi pengerjaan|daerah rumah/i);
+  assert.doesNotMatch(result.messages[0], /pagar.*area mana|dipasang.*mana/i);
+});
+
 test("sends service-specific checklist guidance for common work types", () => {
   const fenceMessages = buildConversationMessages({
     session: {

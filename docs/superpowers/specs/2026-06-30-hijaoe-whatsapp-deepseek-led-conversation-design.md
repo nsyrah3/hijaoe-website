@@ -135,6 +135,7 @@ Balasan harus:
 - tidak menanyakan ulang data yang sudah jelas disebut pelanggan;
 - bertanya maksimal satu hal utama ketika data masih kurang;
 - menyesuaikan pertanyaan lanjutan dengan jenis pekerjaan: untuk meja, kursi, lemari, rak, atau furnitur satuan boleh tanya jumlah/unit/set; untuk pagar, kanopi, railing, plafon, partisi, aluminium kaca, kitchen set, dan pekerjaan area/linear tanyakan ukuran, panjang area, foto lokasi, model, atau nama;
+- ketika meminta lokasi proyek, menanyakan daerah/alamat rumah atau lokasi pengerjaan, misalnya "Lokasi rumahnya di daerah mana, Kak?", bukan wording yang terdengar seperti posisi pemasangan di rumah;
 - boleh minta foto kalau relevan, tetapi tidak memaksa;
 - jika foto sudah diterima, tidak boleh meminta foto lagi dan harus mengakui foto itu sebagai referensi;
 - mengikuti `leadGuidance` untuk memilih pertanyaan berikutnya;
@@ -203,6 +204,7 @@ Test yang dibutuhkan:
 - program memaksa konfirmasi ketika data minimal sudah lengkap dan DeepSeek masih bertanya data opsional;
 - `serviceChecklist` berisi detail yang relevan untuk pagar, kanopi, plafon/partisi, aluminium/kaca, dan furnitur satuan;
 - pertanyaan detail pelanggan yang tidak boleh dijawab ngarang dicatat di summary lead;
+- output yang ambigu menanyakan posisi pemasangan, seperti "pagar di area mana", ditolak dan diganti menjadi pertanyaan lokasi rumah/proyek;
 - pertanyaan alamat, lokasi bengkel, shareloc, atau Google Maps HIJAOE dijawab dengan `business.mapUrl` tanpa memanggil DeepSeek;
 - pesan lokasi pengerjaan pelanggan tidak boleh keliru dijawab sebagai alamat bengkel HIJAOE;
 - output harga atau janji jadwal ditolak;
