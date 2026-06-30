@@ -62,7 +62,7 @@ introShown
 
 `historySummary` adalah ringkasan singkat non-rahasia untuk membantu DeepSeek memahami percakapan tanpa menyimpan seluruh chat panjang di prompt.
 
-`introShown` menandai apakah pelanggan sudah mendapat pembuka transparan bahwa percakapan dibantu asisten digital atau AI agent HIJAOE. Intro hanya dipakai pada balasan DeepSeek pertama, lalu tidak diulang.
+`introShown` menandai apakah pelanggan sudah mendapat pembuka transparan bahwa percakapan dibantu asisten digital atau AI agent HIJAOE untuk mencatat kebutuhan. Intro hanya dipakai pada balasan DeepSeek pertama, lalu tidak diulang.
 
 ## Output DeepSeek
 
@@ -98,9 +98,10 @@ Balasan harus:
 
 - bahasa Indonesia natural seperti admin WhatsApp;
 - singkat dan tidak terlalu formal;
-- pada balasan pertama, transparan bahwa chat dibantu asisten digital atau AI agent HIJAOE yang mencatat kebutuhan lalu meneruskan ke admin;
+- pada balasan pertama, transparan bahwa chat dibantu asisten digital atau AI agent HIJAOE yang mencatat kebutuhan pelanggan;
 - setelah intro pertama, tidak mengulang penjelasan AI/asisten digital;
 - menyesuaikan jika pelanggan mengirim beberapa pesan sekaligus;
+- mengisi `dataPatch` dengan semua info yang sudah jelas dari chat: layanan, lokasi, ukuran, material, waktu target, referensi foto, nama, email, dan persetujuan marketing;
 - tidak menanyakan ulang data yang sudah jelas disebut pelanggan;
 - bertanya maksimal satu hal utama ketika data masih kurang;
 - boleh minta foto kalau relevan, tetapi tidak memaksa;

@@ -41,7 +41,7 @@ test("allows a transparent AI intro on the first DeepSeek reply and marks it sho
 
       return JSON.stringify({
         reply:
-          "Halo Kak, saya AI agent HIJAOE. Saya bantu catat dulu kebutuhan Kakak, nanti saya teruskan ke admin ya. Mau dibantu buat apa?",
+          "Halo Kak, saya AI agent HIJAOE. Saya bantu catat dulu kebutuhan Kakak. Mau dibantu buat apa?",
         dataPatch: {},
         state: "active",
         readyToConfirm: false,
@@ -54,6 +54,24 @@ test("allows a transparent AI intro on the first DeepSeek reply and marks it sho
 
   assert.equal(result.session.introShown, true);
   assert.match(result.messages[0], /AI agent HIJAOE/);
+});
+
+test("first intro prompt focuses on collecting lead info without promising admin forwarding", () => {
+  const messages = buildConversationMessages({
+    session: createSession("628111"),
+    messages: ["halo kak"],
+  });
+  const systemPrompt = messages[0].content;
+
+  assert.match(systemPrompt, /mencatat kebutuhan/i);
+  assert.doesNotMatch(systemPrompt, /menerus(?:kan|kannya)\s+ke\s+admin/i);
+  assert.doesNotMatch(systemPrompt, /teruskan\s+ke\s+admin/i);
+  assert.match(systemPrompt, /service/i);
+  assert.match(systemPrompt, /location/i);
+  assert.match(systemPrompt, /dimensions/i);
+  assert.match(systemPrompt, /material/i);
+  assert.match(systemPrompt, /targetTime/i);
+  assert.match(systemPrompt, /photoReferences/i);
 });
 
 test("tells DeepSeek not to repeat the intro once it was shown", () => {
