@@ -154,6 +154,7 @@ export function buildSummary(session) {
     `Bahan atau model: ${summaryValue(data.material)}`,
     `Target waktu: ${summaryValue(data.targetTime)}`,
     `Foto referensi: ${summaryValue(data.photoReferences)}`,
+    `Pertanyaan customer: ${summaryValue(data.customerQuestions)}`,
     `Email: ${summaryValue(data.email)}`,
     `Izin email promosi: ${summaryValue(data.emailMarketingConsent)}`,
     "",
@@ -176,7 +177,7 @@ export function buildLead(session, now = new Date()) {
     dimensions: data.dimensions,
     material_or_style: data.material,
     target_time: data.targetTime,
-    notes: "",
+    notes: data.customerQuestions,
     photo_references: data.photoReferences,
     conversation_summary: buildSummary(session),
     handoff_reason:

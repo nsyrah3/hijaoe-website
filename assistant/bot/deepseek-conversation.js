@@ -77,6 +77,15 @@ const UNIT_BASED_SERVICE_PATTERN =
   /\b(?:meja|kursi|bangku|lemari|rak|kabinet|furnitur|furniture)\b/i;
 const LINEAR_OR_AREA_SERVICE_PATTERN =
   /\b(?:pagar|kanopi|railing|plafon|partisi|aluminium|alumunium|kaca|kusen|pintu|jendela|atap|baja ringan|kitchen set|dapur|teras|dinding)\b/i;
+const FENCE_SERVICE_PATTERN = /\b(?:pagar|railing|teralis|gerbang)\b/i;
+const CANOPY_SERVICE_PATTERN = /\b(?:kanopi|atap|baja ringan)\b/i;
+const CEILING_SERVICE_PATTERN = /\b(?:plafon|partisi|gypsum|gipsum|pvc)\b/i;
+const ALUMINIUM_GLASS_SERVICE_PATTERN =
+  /\b(?:aluminium|alumunium|kaca|kusen|pintu|jendela)\b/i;
+const CUSTOMER_DETAIL_QUESTION_TOPIC_PATTERN =
+  /\b(?:bahan|warna|model|stok|pilihan|ukuran|custom|tersedia|ready|finishing|spesifikasi)\b/i;
+const QUESTION_INTENT_PATTERN =
+  /\?|(?:apa|apakah|bisa|boleh|emang|memang|gimana|bagaimana|berapa|tersedia|ready)\b/i;
 
 export async function runDeepSeekConversation({
   session,
@@ -174,14 +183,18 @@ export async function runDeepSeekConversation({
 
     const nextSession = applyOutput(currentSession, output);
 
-    if (output.readyToConfirm && hasMinimumLeadData(nextSession)) {
+    if (hasMinimumLeadData(nextSession)) {
       const confirmingSession = {
         ...nextSession,
         state: "confirming",
       };
       return {
         session: confirmingSession,
-        messages: [output.reply || buildSummary(confirmingSession)],
+        messages: [
+          output.readyToConfirm && output.reply
+            ? output.reply
+            : buildSummary(confirmingSession),
+        ],
         lead: null,
         replyIsFinal: true,
       };
@@ -212,13 +225,13 @@ export function buildConversationMessages({ session, messages }) {
         "Jika session.introShown false, buka dengan penjelasan singkat dalam kata-katamu sendiri bahwa kamu asisten digital atau AI agent HIJAOE yang membantu mencatat kebutuhan pelanggan.",
         "Jika session.introShown true, jangan ulangi intro AI/asisten digital; langsung lanjutkan konteks percakapan.",
         "Tujuan utama percakapan adalah melengkapi data kebutuhan pelanggan ke dataPatch, bukan sekadar menjawab umum.",
-        "Isi semua data yang sudah jelas dari customerMessages: service, location, dimensions, material, targetTime, photoReferences, name, email, dan emailMarketingConsent.",
+        "Isi semua data yang sudah jelas dari customerMessages: service, location, dimensions, material, targetTime, photoReferences, customerQuestions, name, email, dan emailMarketingConsent.",
         "Field minimal sebelum konfirmasi adalah service, location, dan name; field lain dicatat jika pelanggan menyebutnya atau mengirim foto.",
         "Jika pelanggan belum tahu, menyerahkan, atau meminta HIJAOE menentukan ukuran, isi dataPatch.dimensions dengan \"Belum ditentukan\" dan lanjutkan ke info penting berikutnya.",
         "Jika pelanggan bilang tidak ada foto atau referensi, isi dataPatch.photoReferences dengan \"Tidak ada referensi foto\" dan jangan tanyakan foto lagi.",
         "Field material juga boleh dipakai untuk warna atau finishing, misalnya \"Warna natural\".",
         "Kamu bukan sales, katalog, atau product knowledge base; tugasmu hanya mencatat kebutuhan dan pertanyaan pelanggan.",
-        "Jika pelanggan bertanya detail yang tidak ada di session atau customerMessages, jangan mengarang jawaban; catat pertanyaannya dan katakan admin HIJAOE perlu cek detail itu.",
+        "Jika pelanggan bertanya detail yang tidak ada di session atau customerMessages, jangan mengarang jawaban; isi customerQuestions dengan pertanyaan itu, lalu katakan admin HIJAOE perlu cek detail itu.",
         "Jika beberapa data kurang, pilih satu pertanyaan lanjutan yang paling penting untuk melengkapi lead.",
         "Pertanyaan lanjutan harus sesuai jenis pekerjaan: untuk meja, kursi, lemari, rak, atau furnitur satuan boleh tanya jumlah/unit/set; untuk pagar, kanopi, railing, plafon, partisi, aluminium kaca, kitchen set, atau pekerjaan area/linear jangan tanya jumlah, tanyakan ukuran, panjang area, foto lokasi, model, atau nama.",
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
@@ -237,7 +250,7 @@ export function buildConversationMessages({ session, messages }) {
         "Kalau pelanggan tanya harga, negosiasi, komplain, minta admin, atau minta jadwal pasti, set handoff true.",
         "Ekstrak data yang sudah jelas disebut pelanggan dan jangan tanya ulang data yang sudah ada.",
         "Jika data kurang, tanyakan satu hal utama yang paling masuk akal.",
-        "Schema JSON: {\"reply\":\"\",\"dataPatch\":{\"name\":\"\",\"service\":\"\",\"location\":\"\",\"dimensions\":\"\",\"material\":\"\",\"targetTime\":\"\",\"photoReferences\":\"\",\"email\":\"\",\"emailMarketingConsent\":\"\"},\"state\":\"active|confirming|handoff|closed\",\"readyToConfirm\":false,\"handoff\":false,\"handoffReason\":\"\",\"historySummary\":\"\"}",
+        "Schema JSON: {\"reply\":\"\",\"dataPatch\":{\"name\":\"\",\"service\":\"\",\"location\":\"\",\"dimensions\":\"\",\"material\":\"\",\"targetTime\":\"\",\"photoReferences\":\"\",\"customerQuestions\":\"\",\"email\":\"\",\"emailMarketingConsent\":\"\"},\"state\":\"active|confirming|handoff|closed\",\"readyToConfirm\":false,\"handoff\":false,\"handoffReason\":\"\",\"historySummary\":\"\"}",
       ].join(" "),
     },
     {
@@ -281,8 +294,10 @@ function buildLeadGuidance({ session, messages }) {
       material: leadFieldStatus(data.material),
       targetTime: leadFieldStatus(data.targetTime),
       photoReferences: leadFieldStatus(data.photoReferences),
+      customerQuestions: leadFieldStatus(data.customerQuestions),
       email: leadFieldStatus(data.email),
     },
+    serviceChecklist: serviceChecklist(serviceText),
     readyToConfirm,
     suggestedNextStep: readyToConfirm
       ? "confirm_lead"
@@ -330,6 +345,54 @@ function leadFieldStatus(value) {
     return "deferred_or_absent";
   }
   return "provided";
+}
+
+function serviceChecklist(serviceText) {
+  if (FENCE_SERVICE_PATTERN.test(serviceText)) {
+    return [
+      "panjang area pagar",
+      "tinggi pagar jika sudah ada",
+      "model atau foto referensi",
+      "foto lokasi",
+    ];
+  }
+  if (CANOPY_SERVICE_PATTERN.test(serviceText)) {
+    return [
+      "panjang dan lebar area",
+      "model kanopi",
+      "foto lokasi",
+      "material jika pelanggan sudah tahu",
+    ];
+  }
+  if (CEILING_SERVICE_PATTERN.test(serviceText)) {
+    return [
+      "panjang dan lebar ruangan",
+      "jenis plafon atau partisi jika sudah tahu",
+      "foto area",
+      "tinggi atau kondisi ruangan jika relevan",
+    ];
+  }
+  if (ALUMINIUM_GLASS_SERVICE_PATTERN.test(serviceText)) {
+    return [
+      "jenis item seperti pintu, jendela, kusen, atau partisi",
+      "ukuran bukaan jika sudah ada",
+      "foto lokasi",
+      "model atau arah bukaan jika relevan",
+    ];
+  }
+  if (UNIT_BASED_SERVICE_PATTERN.test(serviceText)) {
+    return [
+      "jumlah unit atau set",
+      "ukuran jika sudah ada",
+      "model atau foto referensi",
+      "warna atau finishing",
+    ];
+  }
+  return [
+    "kebutuhan utama",
+    "lokasi pengerjaan",
+    "ukuran atau foto jika relevan",
+  ];
 }
 
 function suggestedNextQuestions({
@@ -458,10 +521,45 @@ function applyCustomerContextPatches(session, customerText) {
     };
   }
 
+  const customerQuestion = extractCustomerDetailQuestion(customerText);
+  if (customerQuestion) {
+    data = {
+      ...data,
+      customerQuestions: appendUniqueNote(data.customerQuestions, customerQuestion),
+    };
+  }
+
   return {
     ...session,
     data,
   };
+}
+
+function extractCustomerDetailQuestion(customerText) {
+  const text = limitText(customerText, 240);
+  if (
+    !text ||
+    !CUSTOMER_DETAIL_QUESTION_TOPIC_PATTERN.test(text) ||
+    !QUESTION_INTENT_PATTERN.test(text)
+  ) {
+    return "";
+  }
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function appendUniqueNote(existing, value) {
+  const current = String(existing || "").trim();
+  const next = String(value || "").trim();
+  if (!next) {
+    return current;
+  }
+  if (!current) {
+    return next;
+  }
+  if (current.toLowerCase().includes(next.toLowerCase())) {
+    return current;
+  }
+  return limitText(`${current}; ${next}`, 500);
 }
 
 function shouldMarkDimensionsDeferred(session, customerText) {

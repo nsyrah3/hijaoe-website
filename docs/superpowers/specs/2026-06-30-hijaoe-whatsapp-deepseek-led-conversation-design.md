@@ -52,6 +52,7 @@ data:
   material
   targetTime
   photoReferences
+  customerQuestions
   email
   emailMarketingConsent
 historySummary
@@ -73,6 +74,7 @@ Selain `session` dan `customerMessages`, program mengirim `leadGuidance` ke Deep
 - `serviceKind`: `unit_based`, `linear_or_area`, atau `unknown`;
 - `missingRequiredFields`: field wajib yang belum terisi, yaitu `service`, `location`, atau `name`;
 - `optionalFieldStatus`: status field opsional, misalnya `missing`, `provided`, atau `deferred_or_absent`;
+- `serviceChecklist`: checklist detail yang relevan untuk jenis pekerjaan, misalnya panjang/tinggi/foto lokasi untuk pagar atau jumlah/ukuran/model untuk furnitur satuan;
 - `readyToConfirm`: `true` jika data minimal sudah cukup untuk konfirmasi;
 - `suggestedNextStep`: `ask_one_contextual_question` atau `confirm_lead`;
 - `suggestedNextQuestions`: arahan pertanyaan yang paling masuk akal;
@@ -95,6 +97,7 @@ DeepSeek harus membalas JSON valid:
     "material": "",
     "targetTime": "",
     "photoReferences": "",
+    "customerQuestions": "",
     "email": "",
     "emailMarketingConsent": ""
   },
@@ -125,6 +128,7 @@ Balasan harus:
 - menyesuaikan jika pelanggan mengirim beberapa pesan sekaligus;
 - mengisi `dataPatch` dengan semua info yang sudah jelas dari chat: layanan, lokasi, ukuran, material, waktu target, referensi foto, nama, email, dan persetujuan marketing;
 - hanya mencatat kebutuhan dan pertanyaan pelanggan; bot bukan sales, katalog, atau product knowledge base;
+- mencatat pertanyaan detail pelanggan yang belum boleh dijawab ke `customerQuestions`;
 - mencatat field opsional sebagai "Belum ditentukan" ketika pelanggan belum tahu atau menyerahkan detail itu ke HIJAOE;
 - mencatat "Tidak ada referensi foto" ketika pelanggan menyatakan belum punya foto/referensi;
 - memakai field bahan/model untuk warna atau finishing yang disebut pelanggan, misalnya "Warna natural";
@@ -134,6 +138,7 @@ Balasan harus:
 - boleh minta foto kalau relevan, tetapi tidak memaksa;
 - jika foto sudah diterima, tidak boleh meminta foto lagi dan harus mengakui foto itu sebagai referensi;
 - mengikuti `leadGuidance` untuk memilih pertanyaan berikutnya;
+- memakai `serviceChecklist` sebagai panduan detail yang relevan per layanan;
 - konfirmasi ringkasan ketika `leadGuidance.readyToConfirm` true, bukan memaksa data opsional lagi;
 - menjawab pertanyaan alamat/lokasi bengkel HIJAOE dengan link Google Maps resmi jika pelanggan memintanya;
 - menampilkan ringkasan saat data cukup dan meminta konfirmasi pelanggan.
@@ -164,6 +169,8 @@ Lead hanya disinkronkan ke Google Sheets setelah pelanggan mengonfirmasi ringkas
 
 Jika data belum cukup, bot lanjut bertanya natural. Nama tidak harus ditanya di awal.
 
+Setelah `service`, `location`, dan `name` lengkap, program boleh memaksa session masuk `confirming` walaupun DeepSeek masih mencoba bertanya data opsional. Tujuannya mencegah percakapan muter-muter. Field opsional tetap dicatat jika pelanggan menyebutnya sebelum konfirmasi.
+
 ## Fallback
 
 Jika DeepSeek gagal, timeout, JSON tidak valid, atau output melanggar guardrail, bot mengirim fallback pendek:
@@ -193,6 +200,9 @@ Test yang dibutuhkan:
 - output yang menanyakan jumlah untuk pekerjaan satuan seperti meja kursi tetap boleh;
 - prompt DeepSeek membawa `leadGuidance` berisi tipe layanan, field wajib yang kurang, saran pertanyaan, dan larangan pertanyaan;
 - `leadGuidance.readyToConfirm` mengarahkan DeepSeek untuk konfirmasi saat data minimal sudah lengkap;
+- program memaksa konfirmasi ketika data minimal sudah lengkap dan DeepSeek masih bertanya data opsional;
+- `serviceChecklist` berisi detail yang relevan untuk pagar, kanopi, plafon/partisi, aluminium/kaca, dan furnitur satuan;
+- pertanyaan detail pelanggan yang tidak boleh dijawab ngarang dicatat di summary lead;
 - pertanyaan alamat, lokasi bengkel, shareloc, atau Google Maps HIJAOE dijawab dengan `business.mapUrl` tanpa memanggil DeepSeek;
 - pesan lokasi pengerjaan pelanggan tidak boleh keliru dijawab sebagai alamat bengkel HIJAOE;
 - output harga atau janji jadwal ditolak;

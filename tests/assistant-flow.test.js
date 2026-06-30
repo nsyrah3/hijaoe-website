@@ -44,6 +44,7 @@ test("assistant opening creates a fresh session and asks for the work first", ()
     material: "",
     targetTime: "",
     photoReferences: "",
+    customerQuestions: "",
     email: "",
     emailMarketingConsent: "Tidak",
   });

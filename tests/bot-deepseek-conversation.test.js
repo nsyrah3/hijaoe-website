@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createSession } from "../assistant/conversation-engine.js";
+import {
+  buildSummary,
+  createSession,
+} from "../assistant/conversation-engine.js";
 import {
   buildConversationMessages,
   runDeepSeekConversation,
@@ -123,6 +126,44 @@ test("sends contextual lead guidance for linear or area services", () => {
   );
 });
 
+test("sends service-specific checklist guidance for common work types", () => {
+  const fenceMessages = buildConversationMessages({
+    session: {
+      ...createSession("628111"),
+      data: {
+        ...createSession("628111").data,
+        service: "Pagar rumah",
+        location: "Gowa",
+      },
+    },
+    messages: ["saya mau bikin pagar rumah"],
+  });
+  const fencePayload = JSON.parse(fenceMessages[1].content);
+
+  assert.match(
+    fencePayload.leadGuidance.serviceChecklist.join(" "),
+    /panjang|tinggi|foto lokasi|model/i,
+  );
+
+  const ceilingMessages = buildConversationMessages({
+    session: {
+      ...createSession("628111"),
+      data: {
+        ...createSession("628111").data,
+        service: "Plafon PVC",
+        location: "Makassar",
+      },
+    },
+    messages: ["plafon pvc untuk rumah"],
+  });
+  const ceilingPayload = JSON.parse(ceilingMessages[1].content);
+
+  assert.match(
+    ceilingPayload.leadGuidance.serviceChecklist.join(" "),
+    /panjang.*lebar|ruangan|foto/i,
+  );
+});
+
 test("sends quantity guidance for unit based services", () => {
   const session = {
     ...createSession("628111"),
@@ -149,6 +190,38 @@ test("sends quantity guidance for unit based services", () => {
     payload.leadGuidance.avoidQuestions.join(" "),
     /jumlah|unit|set/i,
   );
+});
+
+test("forces confirmation once minimum lead data is complete", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      name: "Ari",
+      service: "Pagar rumah",
+      location: "Gowa",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["atas nama ari"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak. Ada ukuran atau foto lokasi yang mau dikirim?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.equal(result.session.state, "confirming");
+  assert.match(result.messages[0], /Ringkasan kebutuhan awal/i);
+  assert.doesNotMatch(result.messages[0], /Ada ukuran atau foto lokasi/i);
 });
 
 test("guides DeepSeek to confirm when minimum lead data is complete", () => {
@@ -482,6 +555,38 @@ test("does not invent material availability or technical decisions", async () =>
   );
   assert.doesNotMatch(result.messages[0], /jati|multipleks|besi hollow|aluminium/i);
   assert.match(result.messages[0], /admin HIJAOE.*cek|cek.*admin HIJAOE/i);
+});
+
+test("records unsupported customer product questions into the lead summary", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["bahan apa aja yang tersedia?"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Kami tersedia bahan kayu jati, multipleks, besi hollow, dan aluminium, Kak.",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.match(result.session.data.customerQuestions, /bahan apa aja/i);
+  assert.match(buildSummary(result.session), /Pertanyaan customer: bahan apa aja/i);
+  assert.doesNotMatch(result.messages[0], /jati|multipleks|besi hollow|aluminium/i);
 });
 
 test("does not ask quantity for linear or area work like fences", async () => {

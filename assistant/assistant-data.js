@@ -89,6 +89,7 @@ export const EMPTY_CUSTOMER_DATA = Object.freeze({
   material: "",
   targetTime: "",
   photoReferences: "",
+  customerQuestions: "",
   email: "",
   emailMarketingConsent: "Tidak",
 });
