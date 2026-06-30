@@ -73,6 +73,8 @@ test("first intro prompt focuses on collecting lead info without promising admin
   assert.match(systemPrompt, /targetTime/i);
   assert.match(systemPrompt, /photoReferences/i);
   assert.match(systemPrompt, /Belum ditentukan/i);
+  assert.match(systemPrompt, /bukan sales/i);
+  assert.match(systemPrompt, /tidak ada di session/i);
 });
 
 test("tells DeepSeek not to repeat the intro once it was shown", () => {
@@ -306,7 +308,42 @@ test("does not invent available color options", async () => {
     "Pilihan warna standar biasanya biru, hijau, merah, kuning, dan putih. Ada preferensi warna tertentu?",
   );
   assert.doesNotMatch(result.messages[0], /biru, hijau, merah, kuning/i);
-  assert.match(result.messages[0], /warna.*sesuai|disesuaikan/i);
+  assert.match(result.messages[0], /admin HIJAOE.*cek|cek.*admin HIJAOE/i);
+});
+
+test("does not invent material availability or technical decisions", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["bahan apa aja yang tersedia"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Kami tersedia bahan kayu jati, multipleks, besi hollow, dan aluminium, Kak. Silakan pilih salah satu.",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Kami tersedia bahan kayu jati, multipleks, besi hollow, dan aluminium, Kak. Silakan pilih salah satu.",
+  );
+  assert.doesNotMatch(result.messages[0], /jati|multipleks|besi hollow|aluminium/i);
+  assert.match(result.messages[0], /admin HIJAOE.*cek|cek.*admin HIJAOE/i);
 });
 
 test("does not ask for contact after the customer name is already known", async () => {

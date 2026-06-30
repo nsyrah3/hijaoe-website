@@ -21,7 +21,9 @@ const NO_PHOTO_REFERENCES_VALUE = "Tidak ada referensi foto";
 const DEFERRED_DIMENSIONS_VALUE =
   "Belum ditentukan, admin HIJAOE menyesuaikan dari referensi dan kebutuhan";
 const COLOR_OPTIONS_FALLBACK_REPLY =
-  "Untuk warna bisa disesuaikan dengan kebutuhan, Kak. Kalau ada preferensi warna, boleh disebutkan.";
+  "Saya catat pertanyaan soal pilihan warna. Detailnya nanti admin HIJAOE cek, Kak. Kalau Kakak punya preferensi warna, boleh disebutkan.";
+const UNSUPPORTED_DETAIL_FALLBACK_REPLY =
+  "Saya catat pertanyaannya, Kak. Detail itu nanti admin HIJAOE cek dulu supaya tidak salah info.";
 const NAME_ONLY_FALLBACK_REPLY =
   "Boleh tahu atas nama siapa untuk catatan, Kak?";
 const TECHNICAL_DECISION_FALLBACK_REPLY =
@@ -62,6 +64,8 @@ const COLOR_PREFERENCE_PATTERN =
   /\bwarna(?:nya)?\s+([a-zA-Z0-9\s-]{2,60})/i;
 const UNSUPPORTED_COLOR_OPTIONS_PATTERN =
   /\b(?:biru|hijau|merah|kuning|putih)\s*,\s*(?:biru|hijau|merah|kuning|putih)\b|\bpilihan warna standar\b|\bwarna standar\b/i;
+const UNSUPPORTED_AVAILABILITY_CLAIM_PATTERN =
+  /\btersedia\b.*\b(?:bahan|warna|pilihan|stok|model)\b|\b(?:bahan|warna|pilihan|stok|model)\b.*\btersedia\b|\bkami\s+(?:punya|menyediakan)\b|\b(?:kayu jati|multipleks|besi hollow|aluminium)\b/i;
 const CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN =
   /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b|\bnama lengkap\b|\bnama pemesan\b|\batas nama siapa\b/i;
 
@@ -194,6 +198,8 @@ export function buildConversationMessages({ session, messages }) {
         "Jika pelanggan belum tahu, menyerahkan, atau meminta HIJAOE menentukan ukuran, isi dataPatch.dimensions dengan \"Belum ditentukan\" dan lanjutkan ke info penting berikutnya.",
         "Jika pelanggan bilang tidak ada foto atau referensi, isi dataPatch.photoReferences dengan \"Tidak ada referensi foto\" dan jangan tanyakan foto lagi.",
         "Field material juga boleh dipakai untuk warna atau finishing, misalnya \"Warna natural\".",
+        "Kamu bukan sales, katalog, atau product knowledge base; tugasmu hanya mencatat kebutuhan dan pertanyaan pelanggan.",
+        "Jika pelanggan bertanya detail yang tidak ada di session atau customerMessages, jangan mengarang jawaban; catat pertanyaannya dan katakan admin HIJAOE perlu cek detail itu.",
         "Jika beberapa data kurang, pilih satu pertanyaan lanjutan yang paling penting untuk melengkapi lead.",
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
@@ -409,6 +415,9 @@ function getRestrictedOutputReason(output, context) {
   if (UNSUPPORTED_COLOR_OPTIONS_PATTERN.test(output.reply)) {
     return "unsupported_color_options";
   }
+  if (UNSUPPORTED_AVAILABILITY_CLAIM_PATTERN.test(output.reply)) {
+    return "unsupported_availability_claim";
+  }
   if (
     CONTACT_OR_REDUNDANT_NAME_REQUEST_PATTERN.test(output.reply) &&
     (context.session.data.name.trim() || /\b(?:kontak|nomor|no\.?|wa|whatsapp|telepon|hp)\b/i.test(output.reply))
@@ -427,6 +436,9 @@ function fallbackReplyForRestriction(reason) {
   }
   if (reason === "unsupported_color_options") {
     return COLOR_OPTIONS_FALLBACK_REPLY;
+  }
+  if (reason === "unsupported_availability_claim") {
+    return UNSUPPORTED_DETAIL_FALLBACK_REPLY;
   }
   if (reason === "unneeded_contact_or_name") {
     return NAME_ONLY_FALLBACK_REPLY;
