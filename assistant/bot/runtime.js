@@ -9,6 +9,7 @@ import {
 import { createSyncService } from "./sync-service.js";
 import { composeReply } from "./reply-composer.js";
 import { createBotOrchestrator } from "./orchestrator.js";
+import { runDeepSeekConversation } from "./deepseek-conversation.js";
 import { createWhatsAppClient } from "./whatsapp-client.js";
 import { requestDeepSeekCompletion } from "../deepseek-adapter.js";
 
@@ -136,9 +137,24 @@ export async function startBotRuntime({
             signal,
           }),
       }),
+    runConversation: ({ session, messages, now }) =>
+      runDeepSeekConversation({
+        session,
+        messages,
+        now,
+        complete: ({ messages, signal }) =>
+          requestDeepSeekCompletion({
+            apiKey: config.secrets.deepseekApiKey,
+            baseUrl: config.deepseekBaseUrl,
+            model: config.deepseekModel,
+            messages,
+            signal,
+          }),
+      }),
     maxMessageAgeSeconds: config.maxMessageAgeSeconds,
     takeoverHours: config.takeoverHours,
     replyDelayMs: config.replyDelayMs,
+    batchWindowMs: config.batchWindowMs,
     logger,
   });
 

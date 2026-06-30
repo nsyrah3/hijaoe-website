@@ -63,6 +63,8 @@ function createHarness(overrides = {}) {
     composeReply:
       overrides.composeReply ||
       (async ({ deterministicMessages }) => deterministicMessages.join("\n\n")),
+    runConversation: overrides.runConversation,
+    batchWindowMs: overrides.batchWindowMs || 0,
     clock,
     maxMessageAgeSeconds: 600,
     takeoverHours: 24,
@@ -116,6 +118,52 @@ test("paused and duplicate messages produce no side effects", async () => {
     "duplicate",
   );
   assert.equal(state.sent.length, 0);
+});
+
+test("batches quick customer messages into one conversation turn", async () => {
+  let capturedMessages = [];
+  const { orchestrator, state } = createHarness({
+    batchWindowMs: 7000,
+    runConversation: async ({ session, messages }) => {
+      capturedMessages = messages;
+      return {
+        session: {
+          ...session,
+          state: "active",
+          data: {
+            ...session.data,
+            service: "Meja sekolah",
+            location: "Gowa",
+          },
+        },
+        messages: ["Siap Kak, meja sekolah untuk Gowa ya. Mau jumlah berapa?"],
+        lead: null,
+        replyIsFinal: true,
+      };
+    },
+  });
+
+  assert.equal(
+    (await orchestrator.handleIncoming(
+      incoming({ id: "batch-1", text: "saya mau meja sekolah" }),
+    )).action,
+    "queued",
+  );
+  assert.equal(
+    (await orchestrator.handleIncoming(
+      incoming({ id: "batch-2", text: "untuk daerah gowa" }),
+    )).action,
+    "queued",
+  );
+
+  await orchestrator.flushPending("628111");
+
+  assert.deepEqual(capturedMessages, [
+    "saya mau meja sekolah",
+    "untuk daerah gowa",
+  ]);
+  assert.equal(state.sent.length, 1);
+  assert.match(state.sent[0].text, /jumlah berapa/);
 });
 
 test("photo upload URL is stored in the photo field", async () => {

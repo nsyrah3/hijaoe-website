@@ -58,6 +58,7 @@ export function loadBotConfig(env = process.env, cwd = process.cwd()) {
       60,
     ),
     replyDelayMs: nonNegativeNumber(env.BOT_REPLY_DELAY_MS, 1200),
+    batchWindowMs: nonNegativeNumber(env.BOT_BATCH_WINDOW_MS, 7000),
     dataDir: path.resolve(cwd, env.BOT_DATA_DIR || "data/whatsapp-bot"),
     authDir: path.resolve(cwd, env.BOT_AUTH_DIR || ".wwebjs_auth"),
     tempDir: path.resolve(cwd, env.BOT_TEMP_DIR || "tmp/whatsapp-bot"),
