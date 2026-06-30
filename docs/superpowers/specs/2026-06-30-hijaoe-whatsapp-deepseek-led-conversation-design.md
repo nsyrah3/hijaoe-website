@@ -104,6 +104,7 @@ Balasan harus:
 - tidak menanyakan ulang data yang sudah jelas disebut pelanggan;
 - bertanya maksimal satu hal utama ketika data masih kurang;
 - boleh minta foto kalau relevan, tetapi tidak memaksa;
+- jika foto sudah diterima, tidak boleh meminta foto lagi dan harus mengakui foto itu sebagai referensi;
 - menampilkan ringkasan saat data cukup dan meminta konfirmasi pelanggan.
 
 Balasan tidak boleh:
@@ -111,10 +112,11 @@ Balasan tidak boleh:
 - memberi harga, kisaran harga, biaya, diskon, DP, atau angka rupiah;
 - menjanjikan kepastian survei, produksi, pemasangan, atau tanggal selesai;
 - membuat klaim stok/ketersediaan bahan;
+- mengarang ukuran standar, angka dimensi, atau ukuran teknis yang tidak pernah disebut pelanggan;
 - memberi keputusan struktur atau keselamatan;
 - menyebut bot, robot, template, otomasi, atau proses internal.
 
-Jika pelanggan bertanya harga, negosiasi, komplain, atau meminta jadwal pasti, bot handoff ke admin dengan balasan aman.
+Jika pelanggan bertanya harga, negosiasi, komplain, atau meminta jadwal pasti, bot handoff ke admin dengan balasan aman. Jika pelanggan meminta bot menentukan ukuran atau detail teknis, bot tidak menentukan sendiri; bot mencatat referensi dan menyampaikan bahwa admin HIJAOE akan menyesuaikan ukuran dari model dan kebutuhan.
 
 ## Lead dan Konfirmasi
 
@@ -149,6 +151,8 @@ Test yang dibutuhkan:
 - bot tidak menanyakan ulang field yang sudah diekstrak;
 - bot memberi intro transparan sekali dan tidak mengulanginya;
 - foto dengan upload Drive gagal tetap masuk ke DeepSeek sebagai foto diterima;
+- output yang meminta foto ulang setelah foto diterima ditolak;
+- output yang mengarang ukuran standar atau angka dimensi tanpa input pelanggan ditolak;
 - output harga atau janji jadwal ditolak;
 - output yang menyebut bot/template/otomasi ditolak;
 - lead hanya sync setelah konfirmasi;

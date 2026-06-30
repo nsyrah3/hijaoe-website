@@ -15,6 +15,10 @@ import {
 
 const FALLBACK_REPLY =
   "Maaf Kak, boleh dikirim ulang singkat kebutuhannya? Nanti saya catat untuk admin.";
+const PHOTO_RECEIVED_FALLBACK_REPLY =
+  "Baik Kak, fotonya sudah saya terima dan saya catat sebagai referensi modelnya. Nanti admin HIJAOE bantu cek detail lanjutannya.";
+const TECHNICAL_DECISION_FALLBACK_REPLY =
+  "Baik Kak, fotonya saya catat sebagai referensi. Untuk ukuran pastinya nanti admin HIJAOE bantu tentukan sesuai model dan kebutuhan Kakak.";
 const RESTRICTED_HANDOFF_REPLY =
   "Siap Kak, untuk bagian itu saya teruskan ke admin HIJAOE biar dicek langsung.";
 const CONFIRMATION_WORDS = new Set(["ya", "iya", "benar", "sudah benar"]);
@@ -29,6 +33,16 @@ const RESTRICTED_REPLY = [
   /\bjamin(?:an)?\s+selesai\b/i,
   /\bselesai\s+(?:besok|hari\s+\w+)\b/i,
 ];
+const PHOTO_CONTEXT_PATTERN = /\[Foto diterima/i;
+const PHOTO_REQUEST_PATTERN =
+  /\b(?:kirim(?:kan)?|upload|unggah)\s+(?:ulang\s+)?(?:foto|fotonya|gambar|gambarnya)\b|\b(?:foto|fotonya|gambar|gambarnya)\s+(?:boleh\s+)?(?:dikirim|diupload|diunggah)\b/i;
+const STANDARD_SIZE_CLAIM_PATTERN =
+  /\bukuran\s+standar\b|\bstandar\s+yang\s+sering\s+(?:kami|kita)\s+buat\b/i;
+const DIMENSION_SEQUENCE_PATTERN =
+  /\b\d+(?:[.,]\d+)?\s*[x×]\s*\d+(?:[.,]\d+)?(?:\s*[x×]\s*\d+(?:[.,]\d+)?)?\s*(?:cm|mm|meter|m)?\b/gi;
+const DIMENSION_WITH_UNIT_PATTERN =
+  /\b\d+(?:[.,]\d+)?\s*(?:cm|mm|meter|m)\b/gi;
+const NUMBER_PATTERN = /\d+(?:[.,]\d+)?/g;
 
 export async function runDeepSeekConversation({
   session,
@@ -75,19 +89,28 @@ export async function runDeepSeekConversation({
       }),
     });
     const output = normalizeDeepSeekConversationOutput(rawOutput);
-    const nextSession = applyOutput(currentSession, output);
 
     if (
       output.handoff ||
       output.state === "handoff" ||
       output.handoffReason
     ) {
+      const nextSession = applyOutput(currentSession, output);
       return handoff(nextSession, output.handoffReason || "DeepSeek meminta handoff");
     }
 
-    if (isRestrictedReply(output.reply)) {
-      return fallback(nextSession);
+    const restrictedOutputReason = getRestrictedOutputReason(output, {
+      session: currentSession,
+      customerText,
+    });
+    if (restrictedOutputReason) {
+      return fallback(
+        currentSession,
+        fallbackReplyForRestriction(restrictedOutputReason),
+      );
     }
+
+    const nextSession = applyOutput(currentSession, output);
 
     if (output.readyToConfirm && hasMinimumLeadData(nextSession)) {
       const confirmingSession = {
@@ -129,7 +152,10 @@ export function buildConversationMessages({ session, messages }) {
         "Jangan menyebut bot, robot, template, otomasi, atau proses internal.",
         "Jangan memberi harga, kisaran biaya, DP, diskon, atau angka rupiah.",
         "Jangan memberi kepastian survei, produksi, pemasangan, atau tanggal selesai.",
-        "Jangan mengarang stok, ketersediaan bahan, atau keputusan struktur.",
+        "Jangan mengarang stok, ketersediaan bahan, ukuran standar, angka dimensi, atau keputusan struktur.",
+        "Jangan menyebut ukuran pasti atau ukuran standar kecuali pelanggan sudah menyebut ukuran itu.",
+        "Jika customerMessages berisi [Foto diterima...] atau data.photoReferences sudah terisi, jangan minta foto lagi; akui bahwa foto sudah diterima.",
+        "Jika pelanggan meminta kamu menentukan ukuran atau detail teknis, jangan menentukan sendiri; katakan admin HIJAOE akan bantu sesuaikan dari referensi dan kebutuhan.",
         "Kalau pelanggan tanya harga, negosiasi, komplain, minta admin, atau minta jadwal pasti, set handoff true.",
         "Ekstrak data yang sudah jelas disebut pelanggan dan jangan tanya ulang data yang sudah ada.",
         "Jika data kurang, tanyakan satu hal utama yang paling masuk akal.",
@@ -214,13 +240,13 @@ function applyOutput(session, output) {
   };
 }
 
-function fallback(session) {
+function fallback(session, reply = FALLBACK_REPLY) {
   return {
     session: {
       ...session,
       state: session.state === "welcome" ? "active" : session.state,
     },
-    messages: [FALLBACK_REPLY],
+    messages: [reply],
     lead: null,
     replyIsFinal: true,
   };
@@ -247,8 +273,90 @@ function detectRestrictedReason(text) {
   return detectPriceIntent(text) || detectScheduleGuaranteeIntent(text);
 }
 
+function getRestrictedOutputReason(output, context) {
+  if (isRestrictedReply(output.reply)) {
+    return "restricted_reply";
+  }
+  if (
+    hasPhotoContext(context.session, context.customerText) &&
+    PHOTO_REQUEST_PATTERN.test(output.reply)
+  ) {
+    return "photo_already_received";
+  }
+  if (
+    hasUnsupportedDimensionClaim(
+      [output.reply, output.dataPatch.dimensions || ""].join("\n"),
+      context,
+    )
+  ) {
+    return "unsupported_dimensions";
+  }
+  return "";
+}
+
+function fallbackReplyForRestriction(reason) {
+  if (reason === "photo_already_received") {
+    return PHOTO_RECEIVED_FALLBACK_REPLY;
+  }
+  if (reason === "unsupported_dimensions") {
+    return TECHNICAL_DECISION_FALLBACK_REPLY;
+  }
+  return FALLBACK_REPLY;
+}
+
 function isRestrictedReply(reply) {
   return RESTRICTED_REPLY.some((pattern) => pattern.test(reply));
+}
+
+function hasPhotoContext(session, customerText) {
+  return Boolean(
+    session.data.photoReferences.trim() ||
+      PHOTO_CONTEXT_PATTERN.test(customerText),
+  );
+}
+
+function hasUnsupportedDimensionClaim(text, { session, customerText }) {
+  if (!String(text || "").trim()) {
+    return false;
+  }
+  if (STANDARD_SIZE_CLAIM_PATTERN.test(text)) {
+    return true;
+  }
+
+  const replyDimensions = extractDimensionNumbers(text);
+  if (replyDimensions.size === 0) {
+    return false;
+  }
+
+  const knownDimensions = extractDimensionNumbers(
+    [customerText, session.data.dimensions].join("\n"),
+  );
+  for (const value of replyDimensions) {
+    if (!knownDimensions.has(value)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function extractDimensionNumbers(text) {
+  const values = new Set();
+  for (const pattern of [DIMENSION_SEQUENCE_PATTERN, DIMENSION_WITH_UNIT_PATTERN]) {
+    pattern.lastIndex = 0;
+    for (const match of String(text || "").matchAll(pattern)) {
+      const numbers = match[0].match(NUMBER_PATTERN) || [];
+      for (const number of numbers) {
+        values.add(normalizeDimensionNumber(number));
+      }
+    }
+  }
+  return values;
+}
+
+function normalizeDimensionNumber(value) {
+  return String(value || "")
+    .replace(",", ".")
+    .replace(/^0+(?=\d)/, "");
 }
 
 function hasMinimumLeadData(session) {

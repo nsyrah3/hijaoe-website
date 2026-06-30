@@ -86,6 +86,113 @@ test("falls back when DeepSeek returns invalid JSON", async () => {
   assert.equal(result.session.state, "active");
 });
 
+test("does not ask for another photo after a photo was already received", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      photoReferences: "https://drive.google.com/file/d/photo/view",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: [
+      "itu kak modelnya\n[Foto diterima: https://drive.google.com/file/d/photo/view]",
+    ],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Silakan kirim fotonya, nanti admin kami bantu tentukan ukuran yang pas.",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Silakan kirim fotonya, nanti admin kami bantu tentukan ukuran yang pas.",
+  );
+  assert.match(result.messages[0], /fotonya sudah.*terima|foto.*catat/i);
+  assert.doesNotMatch(result.messages[0], /kirim(?:kan)?\s+fotonya/i);
+});
+
+test("does not send exact dimensions that the customer never provided", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      photoReferences: "https://drive.google.com/file/d/photo/view",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["kamu tentukan coba"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Baik kak, ukuran standar yang sering kami buat biasanya panjang 120cm x lebar 60cm x tinggi 75cm.",
+        dataPatch: { dimensions: "120cm x 60cm x 75cm" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Baik kak, ukuran standar yang sering kami buat biasanya panjang 120cm x lebar 60cm x tinggi 75cm.",
+  );
+  assert.doesNotMatch(result.messages[0], /120cm|60cm|75cm/i);
+  assert.match(result.messages[0], /admin HIJAOE.*ukuran|ukuran.*admin HIJAOE/i);
+});
+
+test("allows exact dimensions when they came from the customer", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      dimensions: "120cm x 60cm x 75cm",
+    },
+  };
+
+  const reply =
+    "Saya catat ukuran 120cm x 60cm x 75cm ya, Kak. Ada jumlah meja yang dibutuhkan?";
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["ukurannya 120cm x 60cm x 75cm"],
+    complete: async () =>
+      JSON.stringify({
+        reply,
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.equal(result.messages[0], reply);
+});
+
 test("rejects restricted DeepSeek replies", async () => {
   for (const reply of [
     "Harganya Rp2 juta, Kak.",
