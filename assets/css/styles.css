@@ -1485,18 +1485,24 @@ section[id] {
 }
 
 .service-model-gallery {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: flex;
   gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 2px 0 14px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
 }
 
 .service-model-gallery__item {
+  flex: 0 0 clamp(140px, 17vw, 190px);
   min-width: 0;
   margin: 0;
   overflow: hidden;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-small);
   background: var(--off-white);
+  scroll-snap-align: start;
 }
 
 .service-model-gallery__item img {
@@ -1794,10 +1800,6 @@ section[id] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .service-model-gallery {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .project-preview {
     grid-template-columns: 1fr;
   }
@@ -2008,8 +2010,11 @@ section[id] {
   }
 
   .service-model-gallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+
+  .service-model-gallery__item {
+    flex-basis: 138px;
   }
 
   .service-model-gallery__item figcaption {

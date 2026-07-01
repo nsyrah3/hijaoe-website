@@ -91,7 +91,11 @@ test("error page and service directory have dedicated layout rules", () => {
 test("service model catalog has a compact responsive gallery", () => {
   assert.match(
     styles,
-    /\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s,
+    /\.service-model-gallery\s*\{[^}]*display:\s*flex;[^}]*overflow-x:\s*auto;[^}]*scroll-snap-type:\s*x\s+mandatory;/s,
+  );
+  assert.doesNotMatch(
+    baseStyles,
+    /\.service-model-gallery\s*\{[^}]*grid-template-columns:/s,
   );
   assert.match(
     styles,
@@ -99,10 +103,10 @@ test("service model catalog has a compact responsive gallery", () => {
   );
   assert.match(
     styles,
-    /@media \(max-width: 1100px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
+    /\.service-model-gallery__item\s*\{[^}]*flex:\s*0\s+0\s+clamp\(140px,\s*17vw,\s*190px\);[^}]*scroll-snap-align:\s*start;/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__item\s*\{[^}]*flex-basis:\s*138px;/,
   );
 });
