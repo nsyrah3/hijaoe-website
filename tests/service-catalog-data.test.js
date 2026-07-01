@@ -6,10 +6,10 @@ import {
   serviceModelCatalogItems,
 } from "../assets/js/service-catalog-data.js";
 
-test("school furniture service catalog has ten ordered model examples", () => {
+test("school furniture service catalog has five ordered model examples", () => {
   const models = getServiceModelCatalog("meja-kursi-sekolah-makassar");
 
-  assert.equal(models.length, 10);
+  assert.equal(models.length, 5);
   assert.deepEqual(
     models.map((item) => item.id),
     [
@@ -18,17 +18,12 @@ test("school furniture service catalog has ten ordered model examples", () => {
       "set-meja-kursi-siswa",
       "meja-siswa-double-kayu",
       "meja-guru-sederhana",
-      "kursi-guru-kayu",
-      "set-tk-sd-kayu-natural",
-      "meja-panjang-ruang-kelas",
-      "meja-lipat-sekolah-kayu",
-      "bangku-panjang-sekolah-kayu",
     ],
   );
 });
 
 test("service catalog items use stable paths and honest model copy", () => {
-  assert.equal(serviceModelCatalogItems.length, 10);
+  assert.equal(serviceModelCatalogItems.length, 5);
   assert.equal(
     new Set(serviceModelCatalogItems.map((item) => item.id)).size,
     serviceModelCatalogItems.length,

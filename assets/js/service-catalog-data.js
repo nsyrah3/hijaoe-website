@@ -43,36 +43,6 @@ export const serviceModelCatalogItems = [
     "Meja guru sederhana dengan top kayu natural dan rangka kokoh.",
     "Meja guru sederhana kayu natural dengan rangka besi hitam di ruang kelas",
   ),
-  catalogItem(
-    "kursi-guru-kayu",
-    "Kursi Guru Kayu",
-    "Kursi guru kayu natural dengan rangka besi hitam yang kokoh.",
-    "Kursi guru kayu natural dengan rangka besi hitam di ruang kelas sederhana",
-  ),
-  catalogItem(
-    "set-tk-sd-kayu-natural",
-    "Set TK/SD Kayu Natural",
-    "Set meja kursi ukuran rendah untuk TK atau SD dengan warna natural.",
-    "Set meja kursi TK atau SD kayu natural dengan rangka besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "meja-panjang-ruang-kelas",
-    "Meja Panjang Ruang Kelas",
-    "Meja panjang kayu natural untuk belajar kelompok atau ruang kelas.",
-    "Meja panjang ruang kelas dengan top kayu natural dan rangka besi hitam",
-  ),
-  catalogItem(
-    "meja-lipat-sekolah-kayu",
-    "Meja Lipat Sekolah Kayu",
-    "Meja lipat sekolah dengan permukaan kayu natural dan kaki besi hitam.",
-    "Meja lipat sekolah kayu natural dengan kaki besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "bangku-panjang-sekolah-kayu",
-    "Bangku Panjang Sekolah Kayu",
-    "Bangku panjang kayu natural dengan rangka hitam untuk area sekolah.",
-    "Bangku panjang sekolah kayu natural dengan rangka besi hitam di area sekolah",
-  ),
 ];
 
 export function getServiceModelCatalog(serviceSlug) {

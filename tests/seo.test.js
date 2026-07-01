@@ -259,9 +259,11 @@ test("school furniture page renders model catalog examples", async () => {
   assert.match(html, />Katalog model</);
   assert.match(html, />Contoh model yang bisa dibuat</);
   assert.match(html, /contoh model pesanan/i);
-  assert.equal(cardCount, 10);
+  assert.equal(cardCount, 5);
   assert.match(html, /Meja Siswa Single Kayu/);
-  assert.match(html, /Bangku Panjang Sekolah Kayu/);
+  assert.match(html, /Meja Guru Sederhana/);
+  assert.doesNotMatch(html, /Bangku Panjang Sekolah Kayu/);
+  assert.doesNotMatch(html, /Meja Lipat Sekolah Kayu/);
   assert.match(html, /Tanyakan model ini/);
   assert.match(html, /meja-kursi-sekolah\/meja-siswa-single-kayu\.webp/);
 });
