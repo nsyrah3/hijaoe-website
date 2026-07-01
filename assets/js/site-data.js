@@ -8,10 +8,10 @@ export const business = {
   hours: "Senin-Sabtu, 08.00-17.00",
   closed: "Minggu tutup",
   city: "Makassar",
-  serviceCities: ["Makassar", "Gowa", "Maros"],
-  serviceAreaTitle: "Melayani Makassar, Gowa, Maros, dan sekitarnya.",
+  serviceCities: ["Makassar", "Gowa", "Maros", "Bulukumba", "Palopo"],
+  serviceAreaTitle: "Melayani Makassar dan berbagai wilayah Sulawesi Selatan.",
   serviceArea:
-    "Pengerjaan dan layanan tersedia untuk wilayah Makassar, Gowa, Maros, serta area sekitarnya sesuai kebutuhan. Pengiriman barang atau pengerjaan luar area dapat dibicarakan sesuai kebutuhan, jarak, dan kesepakatan.",
+    "Beberapa pekerjaan sebelumnya dikerjakan di area Bulukumba hingga Palopo. Untuk luar kota, jadwal survei, pengiriman, dan pemasangan menyesuaikan lokasi dan jenis pekerjaan.",
   mapUrl:
     "https://www.google.com/maps/place/HIJAOE/@-5.0853324,119.5224587,15z/data=!3m1!4b1!4m6!3m5!1s0x2dbefbcbfcf97c0b:0xb8cad84f65c55a60!8m2!3d-5.0853325!4d119.5327585!16s%2Fg%2F11g0vyt5dz",
 };
@@ -126,12 +126,12 @@ export const serviceAreas = [
     note: "Area utama layanan HIJAOE",
   },
   {
-    city: "Gowa",
+    city: "Gowa & Maros",
     note: "Pengerjaan sesuai kebutuhan dan kesepakatan",
   },
   {
-    city: "Maros",
-    note: "Pengerjaan sesuai kebutuhan dan kesepakatan",
+    city: "Sulawesi Selatan",
+    note: "Pekerjaan pernah menjangkau Bulukumba hingga Palopo",
   },
 ];
 

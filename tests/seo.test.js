@@ -189,6 +189,14 @@ test("service pages expose discovery and conversion landmarks", async () => {
     assert.match(html, /https:\/\/wa\.me\/6285121508159/);
     assert.doesNotMatch(html, /628976010103/);
     assert.match(html, /href="\/galeri"/);
+    assert.match(
+      html,
+      /Melayani Makassar dan berbagai wilayah Sulawesi Selatan\./,
+    );
+    assert.match(
+      html,
+      /Beberapa pekerjaan sebelumnya dikerjakan di area Bulukumba hingga Palopo\./,
+    );
   }
 });
 
