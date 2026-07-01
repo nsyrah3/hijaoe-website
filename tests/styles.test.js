@@ -91,22 +91,26 @@ test("error page and service directory have dedicated layout rules", () => {
 test("service model catalog has a compact responsive gallery", () => {
   assert.match(
     styles,
-    /\.service-model-gallery\s*\{[^}]*display:\s*flex;[^}]*overflow-x:\s*auto;[^}]*scroll-snap-type:\s*x\s+mandatory;/s,
+    /\.service-model-gallery\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s,
   );
   assert.doesNotMatch(
     baseStyles,
-    /\.service-model-gallery\s*\{[^}]*grid-template-columns:/s,
+    /\.service-model-gallery\s*\{[^}]*overflow-x:\s*auto;/s,
   );
   assert.match(
     styles,
-    /\.service-model-gallery__item img\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;[^}]*object-fit:\s*cover;/s,
+    /\.service-model-gallery__item img\s*\{[^}]*aspect-ratio:\s*5\s*\/\s*4;[^}]*object-fit:\s*cover;/s,
   );
   assert.match(
     styles,
-    /\.service-model-gallery__item\s*\{[^}]*flex:\s*0\s+0\s+clamp\(140px,\s*17vw,\s*190px\);[^}]*scroll-snap-align:\s*start;/s,
+    /\.service-model-gallery__item\s*\{[^}]*box-shadow:\s*0\s+10px\s+24px\s+rgba\(10,\s*15,\s*11,\s*0\.08\);/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__item\s*\{[^}]*flex-basis:\s*138px;/,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);[^}]*gap:\s*8px;/,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__item figcaption\s*\{[^}]*font-size:\s*0\.62rem;/,
   );
 });

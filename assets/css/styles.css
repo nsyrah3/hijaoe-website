@@ -1485,30 +1485,25 @@ section[id] {
 }
 
 .service-model-gallery {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  padding: 2px 0 14px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .service-model-gallery__item {
-  flex: 0 0 clamp(140px, 17vw, 190px);
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(207, 213, 207, 0.82);
   border-radius: var(--radius-small);
-  background: var(--off-white);
-  scroll-snap-align: start;
+  background: var(--white);
+  box-shadow: 0 10px 24px rgba(10, 15, 11, 0.08);
 }
 
 .service-model-gallery__item img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 5 / 4;
   height: auto;
   object-fit: cover;
   background: var(--charcoal-900);
@@ -1516,9 +1511,10 @@ section[id] {
 
 .service-model-gallery__item figcaption {
   margin: 0;
-  padding: 10px 11px 11px;
+  min-height: 40px;
+  padding: 8px 9px 9px;
   color: var(--charcoal-900);
-  font-size: 0.73rem;
+  font-size: 0.68rem;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -2010,17 +2006,14 @@ section[id] {
   }
 
   .service-model-gallery {
-    gap: 10px;
-  }
-
-  .service-model-gallery__item {
-    flex-basis: 138px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .service-model-gallery__item figcaption {
-    min-height: 48px;
-    padding: 9px;
-    font-size: 0.68rem;
+    min-height: 38px;
+    padding: 7px;
+    font-size: 0.62rem;
   }
 
   .project-preview__stage {
