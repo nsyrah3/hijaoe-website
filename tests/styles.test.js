@@ -88,21 +88,21 @@ test("error page and service directory have dedicated layout rules", () => {
   assert.match(styles, /\.service-directory\s*\{/);
 });
 
-test("service model catalog has stable responsive cards", () => {
+test("service model catalog has a compact responsive gallery", () => {
   assert.match(
     styles,
-    /\.service-model-catalog__grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s,
+    /\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s,
   );
   assert.match(
     styles,
-    /\.service-model-card img\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;[^}]*object-fit:\s*cover;/s,
+    /\.service-model-gallery__item img\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;[^}]*object-fit:\s*cover;/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 1100px\)[\s\S]*?\.service-model-catalog__grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+    /@media \(max-width: 1100px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-catalog__grid\s*\{[^}]*grid-template-columns:\s*1fr;/,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
   );
 });

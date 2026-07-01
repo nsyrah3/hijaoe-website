@@ -1484,20 +1484,22 @@ section[id] {
   color: var(--steel-700);
 }
 
-.service-model-catalog__grid {
+.service-model-gallery {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
-.service-model-card {
+.service-model-gallery__item {
+  min-width: 0;
+  margin: 0;
   overflow: hidden;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-small);
   background: var(--off-white);
 }
 
-.service-model-card img {
+.service-model-gallery__item img {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -1506,39 +1508,18 @@ section[id] {
   background: var(--charcoal-900);
 }
 
-.service-model-card__body {
-  display: flex;
-  min-height: 210px;
-  flex-direction: column;
-  padding: 18px;
-}
-
-.service-model-card__body h3 {
+.service-model-gallery__item figcaption {
   margin: 0;
-  font-family: "Barlow Condensed", Impact, sans-serif;
-  font-size: 1.35rem;
-  line-height: 1;
-}
-
-.service-model-card__body p {
-  margin: 12px 0 18px;
-  color: var(--steel-700);
-  font-size: 0.78rem;
-}
-
-.service-model-card__body a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: auto;
-  color: var(--green-600);
-  font-size: 0.76rem;
+  padding: 10px 11px 11px;
+  color: var(--charcoal-900);
+  font-size: 0.73rem;
   font-weight: 700;
+  line-height: 1.25;
 }
 
-.service-model-card__body svg {
-  width: 15px;
-  height: 15px;
+.service-model-catalog__action {
+  display: inline-flex;
+  margin-top: 22px;
 }
 
 .service-page__process h2 {
@@ -1813,8 +1794,8 @@ section[id] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .service-model-catalog__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .service-model-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .project-preview {
@@ -2018,8 +1999,7 @@ section[id] {
 }
 
 @media (max-width: 680px) {
-  .service-model-catalog__header,
-  .service-model-catalog__grid {
+  .service-model-catalog__header {
     grid-template-columns: 1fr;
   }
 
@@ -2027,8 +2007,15 @@ section[id] {
     font-size: 2.25rem;
   }
 
-  .service-model-card__body {
-    min-height: 170px;
+  .service-model-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .service-model-gallery__item figcaption {
+    min-height: 48px;
+    padding: 9px;
+    font-size: 0.68rem;
   }
 
   .project-preview__stage {

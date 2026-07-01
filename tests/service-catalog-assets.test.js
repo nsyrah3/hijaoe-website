@@ -13,9 +13,9 @@ test("all school furniture service catalog images exist as optimized WebP", asyn
     const metadata = await sharp(imagePath).metadata();
 
     assert.ok(stat.size > 0, item.image);
-    assert.ok(stat.size < 280_000, item.image);
+    assert.ok(stat.size < 70_000, item.image);
     assert.equal(metadata.format, "webp", item.image);
-    assert.equal(metadata.width, 960, item.image);
-    assert.equal(metadata.height, 720, item.image);
+    assert.equal(metadata.width, 640, item.image);
+    assert.equal(metadata.height, 480, item.image);
   }
 });

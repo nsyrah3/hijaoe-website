@@ -122,30 +122,19 @@ function renderProcess() {
     .join("");
 }
 
-function renderServiceModelCards(page, models) {
+function renderServiceModelGalleryItems(models) {
   return models
     .map(
-      (modelItem) => `<article class="service-model-card">
+      (modelItem) => `<figure class="service-model-gallery__item">
               <img
                 src="/${escapeHtml(modelItem.image)}"
                 alt="${escapeHtml(modelItem.alt)}"
                 loading="lazy"
-                width="960"
-                height="720"
+                width="640"
+                height="480"
               >
-              <div class="service-model-card__body">
-                <h3>${escapeHtml(modelItem.title)}</h3>
-                <p>${escapeHtml(modelItem.description)}</p>
-                <a
-                  href="${buildWhatsAppUrl(page.heading, modelItem.whatsappLabel)}"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Tanyakan model ini
-                  <i data-lucide="message-circle" aria-hidden="true"></i>
-                </a>
-              </div>
-            </article>`,
+              <figcaption>${escapeHtml(modelItem.title)}</figcaption>
+            </figure>`,
     )
     .join("");
 }
@@ -162,16 +151,27 @@ function renderServiceModelCatalog(page) {
         <div class="container">
           <header class="service-model-catalog__header">
             <div>
-              <p class="eyebrow eyebrow--dark">Katalog model</p>
-              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">Contoh model yang bisa dibuat</h2>
+              <p class="eyebrow eyebrow--dark">Galeri model</p>
+              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">Inspirasi Model Meja &amp; Kursi Sekolah</h2>
             </div>
             <p>
-              Gambar berikut adalah contoh model pesanan. Ukuran, bahan,
-              warna, dan detail akhir tetap menyesuaikan lokasi, kebutuhan,
-              dan budget.
+              Gambar berikut adalah contoh model pesanan untuk memudahkan
+              memilih bentuk awal. Ukuran, bahan, warna, dan detail akhir
+              tetap menyesuaikan lokasi, kebutuhan, dan budget.
             </p>
           </header>
-          <div class="service-model-catalog__grid">${renderServiceModelCards(page, models)}</div>
+          <div class="service-model-gallery">${renderServiceModelGalleryItems(models)}</div>
+          <div class="service-model-catalog__action">
+            <a
+              class="button button--green"
+              href="${buildWhatsAppUrl(page.heading)}"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <i data-lucide="message-circle" aria-hidden="true"></i>
+              Konsultasi model meja kursi sekolah
+            </a>
+          </div>
         </div>
       </section>`;
 }

@@ -253,17 +253,18 @@ test("school furniture page renders model catalog examples", async () => {
     path.join(root, "layanan", "meja-kursi-sekolah-makassar.html"),
     "utf8",
   );
-  const cardCount = (html.match(/class="service-model-card"/g) || []).length;
+  const itemCount = (html.match(/class="service-model-gallery__item"/g) || []).length;
 
   assert.match(html, /class="section service-model-catalog"/);
-  assert.match(html, />Katalog model</);
-  assert.match(html, />Contoh model yang bisa dibuat</);
+  assert.match(html, />Galeri model</);
+  assert.match(html, />Inspirasi Model Meja &amp; Kursi Sekolah</);
   assert.match(html, /contoh model pesanan/i);
-  assert.equal(cardCount, 5);
+  assert.equal(itemCount, 10);
   assert.match(html, /Meja Siswa Single Kayu/);
   assert.match(html, /Meja Guru Sederhana/);
-  assert.doesNotMatch(html, /Bangku Panjang Sekolah Kayu/);
-  assert.doesNotMatch(html, /Meja Lipat Sekolah Kayu/);
-  assert.match(html, /Tanyakan model ini/);
+  assert.match(html, /Bangku Panjang Sekolah Kayu/);
+  assert.match(html, /Meja Lipat Sekolah Kayu/);
+  assert.doesNotMatch(html, /Tanyakan model ini/);
+  assert.match(html, /Konsultasi model meja kursi sekolah/);
   assert.match(html, /meja-kursi-sekolah\/meja-siswa-single-kayu\.webp/);
 });
