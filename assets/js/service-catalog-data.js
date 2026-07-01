@@ -1,4 +1,4 @@
-const baseImagePath = "assets/images/service-catalog/meja-kursi-sekolah";
+const baseImagePath = "assets/images/service-catalog/meja-kursi-sekolah-gallery";
 
 function catalogItem(id, title, description, alt) {
   return {

@@ -266,5 +266,5 @@ test("school furniture page renders model catalog examples", async () => {
   assert.match(html, /Meja Lipat Sekolah Kayu/);
   assert.doesNotMatch(html, /Tanyakan model ini/);
   assert.match(html, /Konsultasi model meja kursi sekolah/);
-  assert.match(html, /meja-kursi-sekolah\/meja-siswa-single-kayu\.webp/);
+  assert.match(html, /meja-kursi-sekolah-gallery\/meja-siswa-single-kayu\.webp/);
 });

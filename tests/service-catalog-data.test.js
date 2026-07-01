@@ -38,7 +38,7 @@ test("service catalog items use stable paths and honest model copy", () => {
     assert.equal(item.serviceSlug, "meja-kursi-sekolah-makassar");
     assert.match(
       item.image,
-      /^assets\/images\/service-catalog\/meja-kursi-sekolah\/[a-z0-9-]+\.webp$/,
+      /^assets\/images\/service-catalog\/meja-kursi-sekolah-gallery\/[a-z0-9-]+\.webp$/,
     );
     assert.equal(item.whatsappLabel, item.title);
     assert.ok(item.title.length >= 8, item.id);
