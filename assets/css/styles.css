@@ -1491,6 +1491,7 @@ section[id] {
 }
 
 .service-model-gallery__item {
+  position: relative;
   min-width: 0;
   margin: 0;
   overflow: hidden;
@@ -1510,11 +1511,16 @@ section[id] {
 }
 
 .service-model-gallery__item figcaption {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
   margin: 0;
-  min-height: 40px;
-  padding: 8px 9px 9px;
-  color: var(--charcoal-900);
-  font-size: 0.68rem;
+  padding: 6px 7px;
+  border-radius: 3px;
+  background: rgba(13, 17, 14, 0.86);
+  color: var(--white);
+  font-size: 0.62rem;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -2006,14 +2012,16 @@ section[id] {
   }
 
   .service-model-gallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .service-model-gallery__item figcaption {
-    min-height: 38px;
-    padding: 7px;
-    font-size: 0.62rem;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    padding: 4px 5px;
+    font-size: 0.54rem;
   }
 
   .project-preview__stage {

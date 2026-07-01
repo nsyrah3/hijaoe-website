@@ -107,10 +107,14 @@ test("service model catalog has a compact responsive gallery", () => {
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);[^}]*gap:\s*8px;/,
+    /\.service-model-gallery__item figcaption\s*\{[^}]*position:\s*absolute;[^}]*left:\s*6px;[^}]*right:\s*6px;[^}]*bottom:\s*6px;/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__item figcaption\s*\{[^}]*font-size:\s*0\.62rem;/,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[^}]*gap:\s*6px;/,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__item figcaption\s*\{[^}]*font-size:\s*0\.54rem;/,
   );
 });
