@@ -1,3 +1,8 @@
+import {
+  buildServiceModelGalleryUpdate,
+  getServiceModelThumbPressedState,
+} from "./service-model-gallery.js";
+
 const menuButton = document.querySelector("#menu-button");
 const primaryNavigation = document.querySelector("#primary-navigation");
 
@@ -45,34 +50,44 @@ document.querySelectorAll("[data-year]").forEach((element) => {
   element.textContent = new Date().getFullYear();
 });
 
-document.querySelectorAll("[data-service-model-gallery]").forEach((gallery) => {
-  const previewImage = gallery.querySelector("[data-service-model-preview-image]");
-  const previewTitle = gallery.querySelector("[data-service-model-preview-title]");
-  const thumbs = [...gallery.querySelectorAll("[data-service-model-thumb]")];
+function activateServiceModelGalleryPreview(gallery, button) {
+  const update = buildServiceModelGalleryUpdate(button.dataset);
+  const image = gallery.querySelector("[data-service-model-preview-image]");
+  const title = gallery.querySelector("[data-service-model-preview-title]");
 
-  if (!previewImage || !previewTitle || thumbs.length === 0) {
+  if (!update || !image || !title) {
     return;
   }
 
-  thumbs.forEach((thumb) => {
-    thumb.addEventListener("click", () => {
-      const { serviceModelImage, serviceModelAlt, serviceModelTitle } = thumb.dataset;
+  image.src = update.image;
+  image.alt = update.alt;
+  title.textContent = update.title;
 
-      if (!serviceModelImage || !serviceModelAlt || !serviceModelTitle) {
-        return;
-      }
+  const buttons = Array.from(
+    gallery.querySelectorAll("[data-service-model-thumb]"),
+  );
+  const activeIndex = buttons.indexOf(button);
+  const pressedState = getServiceModelThumbPressedState(
+    buttons.length,
+    activeIndex,
+  );
 
-      thumbs.forEach((item) => item.setAttribute("aria-pressed", "false"));
-      thumb.setAttribute("aria-pressed", "true");
-      previewImage.dataset.switching = "true";
-      previewImage.src = serviceModelImage;
-      previewImage.alt = serviceModelAlt;
-      previewTitle.textContent = serviceModelTitle;
+  buttons.forEach((thumb, index) => {
+    thumb.setAttribute("aria-pressed", pressedState[index]);
+  });
+}
 
-      window.setTimeout(() => {
-        delete previewImage.dataset.switching;
-      }, 180);
-    });
+document.querySelectorAll("[data-service-model-gallery]").forEach((gallery) => {
+  gallery.querySelectorAll("[data-service-model-thumb]").forEach((button) => {
+    button.addEventListener("click", () =>
+      activateServiceModelGalleryPreview(gallery, button),
+    );
+    button.addEventListener("focus", () =>
+      activateServiceModelGalleryPreview(gallery, button),
+    );
+    button.addEventListener("pointerenter", () =>
+      activateServiceModelGalleryPreview(gallery, button),
+    );
   });
 });
 

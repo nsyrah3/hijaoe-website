@@ -88,18 +88,30 @@ test("error page and service directory have dedicated layout rules", () => {
   assert.match(styles, /\.service-directory\s*\{/);
 });
 
-test("service model catalog has stable responsive galleries", () => {
+test("service model catalog has an interactive preview gallery", () => {
   assert.match(
     styles,
-    /\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+320px;/s,
+    /\.service-model-gallery\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1\.35fr\)\s+minmax\(340px,\s*0\.65fr\);/s,
+  );
+  assert.doesNotMatch(
+    baseStyles,
+    /\.service-model-gallery\s*\{[^}]*overflow-x:\s*auto;/s,
   );
   assert.match(
     styles,
-    /\.service-model-gallery__stage\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;/s,
+    /\.service-model-gallery__stage\s*\{[^}]*min-height:\s*500px;[^}]*overflow:\s*hidden;/s,
   );
   assert.match(
     styles,
-    /\.service-model-gallery__thumbs\s*\{[^}]*grid-template-columns:\s*1fr;/s,
+    /\.service-model-gallery__stage img\s*\{[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s,
+  );
+  assert.match(
+    styles,
+    /\.service-model-gallery__thumbs\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /\.service-model-gallery__thumb\[aria-pressed="true"\]\s*\{[^}]*border-color:\s*var\(--green-500\);/s,
   );
   assert.match(
     styles,
@@ -107,6 +119,6 @@ test("service model catalog has stable responsive galleries", () => {
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__thumbs\s*\{[^}]*overflow-x:\s*auto;/,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__thumbs\s*\{[^}]*grid-auto-flow:\s*column;[^}]*overflow-x:\s*auto;/,
   );
 });

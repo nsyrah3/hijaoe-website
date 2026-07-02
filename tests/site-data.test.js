@@ -36,24 +36,31 @@ test("service groups cover the six confirmed categories", () => {
   );
 });
 
-test("service area covers Makassar, Gowa, Maros, and nearby areas", () => {
+test("service area covers Makassar and broader South Sulawesi work reach", () => {
   assert.equal(
     business.serviceAreaTitle,
-    "Melayani Makassar, Gowa, Maros, dan sekitarnya.",
+    "Melayani Makassar dan berbagai wilayah Sulawesi Selatan.",
   );
-  assert.deepEqual(business.serviceCities, ["Makassar", "Gowa", "Maros"]);
+  assert.deepEqual(business.serviceCities, [
+    "Makassar",
+    "Gowa",
+    "Maros",
+    "Bulukumba",
+    "Palopo",
+  ]);
   assert.deepEqual(
     serviceAreas.map((area) => area.city),
-    ["Makassar", "Gowa", "Maros"],
+    ["Makassar", "Gowa & Maros", "Sulawesi Selatan"],
   );
-  assert.match(
+  assert.equal(
     business.serviceArea,
-    /Pengiriman barang atau pengerjaan luar area dapat dibicarakan/i,
+    "Menjangkau area Bulukumba hingga Palopo.",
   );
   assert.doesNotMatch(
     `${business.serviceArea} ${JSON.stringify(serviceAreas)}`,
-    /Bulukumba|Palopo/,
+    /\bpernah\b/i,
   );
+  assert.doesNotMatch(business.serviceArea, /Untuk luar kota/i);
 });
 
 test("homepage projects are six featured catalog services", () => {

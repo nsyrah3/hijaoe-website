@@ -61,10 +61,16 @@ test("catalog load-more feedback is exposed as a polite live status", () => {
   assert.match(statusTag, /\bclass="visually-hidden"/);
 });
 
-test("homepage static copy keeps service area to Makassar, Gowa, Maros, and nearby areas", () => {
-  assert.doesNotMatch(indexHtml, /Sulawesi Selatan|Bulukumba|Palopo/i);
-  assert.match(indexHtml, /Makassar, Gowa, Maros, dan sekitarnya/i);
-  assert.match(indexHtml, /Makassar · Gowa · Maros/);
+test("homepage static copy supports the broader South Sulawesi service area", () => {
+  assert.doesNotMatch(indexHtml, /Makassar, Gowa, Maros, dan sekitarnya/i);
+  assert.match(indexHtml, /Makassar dan berbagai wilayah Sulawesi Selatan/i);
+  assert.match(indexHtml, /Bulukumba/i);
+  assert.match(indexHtml, /Palopo/i);
+  assert.match(indexHtml, /Sulawesi Selatan/);
+  assert.match(
+    indexHtml,
+    /src="\/assets\/js\/main\.js\?v=20260702-sulsel-reach"/,
+  );
 });
 
 test("homepage mobile menu restores focus after Escape closes it", () => {

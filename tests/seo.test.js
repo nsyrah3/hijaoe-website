@@ -104,6 +104,26 @@ test("generated service schemas are valid JSON", async () => {
   }
 });
 
+test("generated service pages load cache-busted service assets", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+
+    assert.match(
+      html,
+      /<link rel="stylesheet" href="\/assets\/css\/styles\.css\?v=20260702-service-gallery">/,
+      page.slug,
+    );
+    assert.match(
+      html,
+      /<script type="module" src="\/assets\/js\/service-page\.js\?v=20260702-service-gallery"><\/script>/,
+      page.slug,
+    );
+  }
+});
+
 test("generated pages link only to known related services", () => {
   const slugs = new Set(seoPages.map((page) => page.slug));
   for (const page of seoPages) {
@@ -189,6 +209,16 @@ test("service pages expose discovery and conversion landmarks", async () => {
     assert.match(html, /https:\/\/wa\.me\/6285121508159/);
     assert.doesNotMatch(html, /628976010103/);
     assert.match(html, /href="\/galeri"/);
+    assert.match(
+      html,
+      /Melayani Makassar dan berbagai wilayah Sulawesi Selatan\./,
+    );
+    assert.match(
+      html,
+      /Menjangkau area Bulukumba hingga Palopo\./,
+    );
+    assert.doesNotMatch(html, /\bpernah\b/i);
+    assert.doesNotMatch(html, /Untuk luar kota/i);
   }
 });
 
@@ -248,27 +278,79 @@ test("AI service visuals are not presented as completed customer projects", asyn
   }
 });
 
-test("service model pages render large preview galleries", async () => {
-  for (const [slug, heading, firstModel] of [
-    [
-      "meja-kursi-sekolah-makassar",
-      "Inspirasi Model Meja &amp; Kursi Sekolah",
-      "Meja Siswa Single Kayu",
-    ],
-    ["kanopi-makassar", "Inspirasi Model Kanopi", "Kanopi Alderon Carport Minimalis"],
-  ]) {
-    const html = await readFile(path.join(root, "layanan", `${slug}.html`), "utf8");
+test("school furniture page renders model catalog examples", async () => {
+  const html = await readFile(
+    path.join(root, "layanan", "meja-kursi-sekolah-makassar.html"),
+    "utf8",
+  );
+  const thumbCount = (html.match(/data-service-model-thumb/g) || []).length;
 
-    assert.match(html, /class="section service-model-catalog"/);
-    assert.match(html, />Galeri model</);
-    assert.match(html, new RegExp(heading));
-    assert.match(html, /Gambar berikut adalah contoh model pesanan untuk memudahkan/);
-    assert.match(html, /class="service-model-gallery"/);
-    assert.match(html, /class="service-model-gallery__stage"/);
-    assert.match(html, /data-service-model-preview-image/);
-    assert.match(html, /data-service-model-thumb/);
-    assert.match(html, new RegExp(firstModel));
-    assert.equal((html.match(/data-service-model-thumb/g) || []).length, 10);
-    assert.doesNotMatch(html, /class="service-model-card"/);
-  }
+  assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, /data-service-model-gallery/);
+  assert.match(html, /class="service-model-gallery__stage"/);
+  assert.match(html, /data-service-model-preview-image/);
+  assert.match(html, /data-service-model-preview-title/);
+  assert.match(html, />Galeri model</);
+  assert.match(html, />Inspirasi Model Meja &amp; Kursi Sekolah</);
+  assert.match(html, /contoh model pesanan/i);
+  assert.equal(thumbCount, 10);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /Meja Siswa Single Kayu/);
+  assert.match(html, /Meja Guru Sederhana/);
+  assert.match(html, /Bangku Panjang Sekolah Kayu/);
+  assert.match(html, /Meja Lipat Sekolah Kayu/);
+  assert.doesNotMatch(html, /Tanyakan model ini/);
+  assert.match(html, /Konsultasi model meja kursi sekolah/);
+  assert.match(html, /meja-kursi-sekolah-gallery\/meja-siswa-single-kayu\.webp/);
+});
+
+test("iron fence page renders model catalog examples", async () => {
+  const html = await readFile(
+    path.join(root, "layanan", "pagar-besi-makassar.html"),
+    "utf8",
+  );
+  const thumbCount = (html.match(/data-service-model-thumb/g) || []).length;
+
+  assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, /data-service-model-gallery/);
+  assert.match(html, /class="service-model-gallery__stage"/);
+  assert.match(html, /data-service-model-preview-image/);
+  assert.match(html, /data-service-model-preview-title/);
+  assert.match(html, />Galeri model</);
+  assert.match(html, />Inspirasi Model Pagar Besi</);
+  assert.match(html, /contoh model pesanan/i);
+  assert.equal(thumbCount, 10);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /Pagar Besi Minimalis Hollow/);
+  assert.match(html, /Pagar Besi Laser Cut/);
+  assert.match(html, /Pagar Besi Gerbang Lebar/);
+  assert.doesNotMatch(html, /Tanyakan model ini/);
+  assert.match(html, /Konsultasi model pagar besi/);
+  assert.doesNotMatch(html, /Inspirasi Model Meja &amp; Kursi Sekolah/);
+  assert.match(html, /pagar-besi-gallery\/pagar-besi-minimalis-hollow\.webp/);
+});
+
+test("canopy page renders model catalog examples", async () => {
+  const html = await readFile(
+    path.join(root, "layanan", "kanopi-makassar.html"),
+    "utf8",
+  );
+  const thumbCount = (html.match(/data-service-model-thumb/g) || []).length;
+
+  assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, /data-service-model-gallery/);
+  assert.match(html, /class="service-model-gallery__stage"/);
+  assert.match(html, /data-service-model-preview-image/);
+  assert.match(html, /data-service-model-preview-title/);
+  assert.match(html, />Galeri model</);
+  assert.match(html, />Inspirasi Model Kanopi</);
+  assert.match(html, /contoh model pesanan/i);
+  assert.equal(thumbCount, 10);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /Kanopi Alderon Carport Minimalis/);
+  assert.match(html, /Kanopi Membran Modern/);
+  assert.match(html, /Kanopi Samping Rumah Multifungsi/);
+  assert.doesNotMatch(html, /Tanyakan model ini/);
+  assert.match(html, /Konsultasi model kanopi/);
+  assert.match(html, /kanopi-gallery\/kanopi-alderon-carport-minimalis\.webp/);
 });

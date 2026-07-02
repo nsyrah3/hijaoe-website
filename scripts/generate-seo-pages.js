@@ -9,10 +9,11 @@ import {
   business,
   processSteps,
 } from "../assets/js/site-data.js";
-import { getServiceModelCatalog } from "../assets/js/service-catalog-data.js";
+import { getServiceModelCatalogSection } from "../assets/js/service-catalog-data.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = path.join(root, "layanan");
+const serviceAssetVersion = "20260702-service-gallery";
 
 function escapeHtml(value) {
   return String(value)
@@ -122,56 +123,46 @@ function renderProcess() {
     .join("");
 }
 
-function modelGalleryTitle(page) {
-  if (page.slug === "meja-kursi-sekolah-makassar") {
-    return "Inspirasi Model Meja & Kursi Sekolah";
-  }
-
-  if (page.slug === "kanopi-makassar") {
-    return "Inspirasi Model Kanopi";
-  }
-
-  return `Inspirasi Model ${page.heading}`;
-}
-
-function renderServiceModelThumbs(models) {
+function renderServiceModelGalleryThumbs(models) {
   return models
-    .map(
-      (modelItem, index) => `<button
-                class="service-model-gallery__thumb"
-                type="button"
-                data-service-model-thumb
-                data-service-model-image="/${escapeHtml(modelItem.image)}"
-                data-service-model-alt="${escapeHtml(modelItem.alt)}"
-                data-service-model-title="${escapeHtml(modelItem.title)}"
-                aria-pressed="${index === 0 ? "true" : "false"}"
+    .map((modelItem, index) => {
+      const imagePath = `/${modelItem.image}`;
+
+      return `<button
+              class="service-model-gallery__thumb"
+              type="button"
+              data-service-model-thumb
+              data-service-model-image="${escapeHtml(imagePath)}"
+              data-service-model-alt="${escapeHtml(modelItem.alt)}"
+              data-service-model-title="${escapeHtml(modelItem.title)}"
+              aria-pressed="${String(index === 0)}"
+            >
+              <img
+                src="${escapeHtml(imagePath)}"
+                alt=""
+                loading="lazy"
+                width="160"
+                height="120"
+                aria-hidden="true"
               >
-                <img
-                  src="/${escapeHtml(modelItem.image)}"
-                  alt=""
-                  loading="lazy"
-                  width="160"
-                  height="120"
-                  aria-hidden="true"
-                >
-                <span>${escapeHtml(modelItem.title)}</span>
-              </button>`,
-    )
+              <span>${escapeHtml(modelItem.title)}</span>
+            </button>`;
+    })
     .join("");
 }
 
-function renderServiceModelGallery(page, models) {
-  const activeModel = models[0];
-  const galleryTitle = modelGalleryTitle(page);
+function renderServiceModelGallery(catalogSection) {
+  const [activeModel] = catalogSection.items;
+  const activeImage = `/${activeModel.image}`;
 
   return `<div
             class="service-model-gallery"
             data-service-model-gallery
-            aria-label="${escapeHtml(galleryTitle)}"
+            aria-label="${escapeHtml(catalogSection.heading)}"
           >
             <article class="service-model-gallery__stage">
               <img
-                src="/${escapeHtml(activeModel.image)}"
+                src="${escapeHtml(activeImage)}"
                 alt="${escapeHtml(activeModel.alt)}"
                 loading="lazy"
                 width="640"
@@ -185,19 +176,17 @@ function renderServiceModelGallery(page, models) {
               </div>
             </article>
             <div class="service-model-gallery__thumbs" aria-label="Pilih model">
-              ${renderServiceModelThumbs(models)}
+              ${renderServiceModelGalleryThumbs(catalogSection.items)}
             </div>
           </div>`;
 }
 
 function renderServiceModelCatalog(page) {
-  const models = getServiceModelCatalog(page.slug);
+  const catalogSection = getServiceModelCatalogSection(page.slug);
 
-  if (models.length === 0) {
+  if (!catalogSection || catalogSection.items.length === 0) {
     return "";
   }
-
-  const galleryTitle = modelGalleryTitle(page);
 
   return `
       <section class="section service-model-catalog" aria-labelledby="service-model-catalog-${escapeHtml(page.slug)}">
@@ -205,7 +194,7 @@ function renderServiceModelCatalog(page) {
           <header class="service-model-catalog__header">
             <div>
               <p class="eyebrow eyebrow--dark">Galeri model</p>
-              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">${escapeHtml(galleryTitle)}</h2>
+              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">${escapeHtml(catalogSection.heading)}</h2>
             </div>
             <p>
               Gambar berikut adalah contoh model pesanan untuk memudahkan
@@ -213,7 +202,18 @@ function renderServiceModelCatalog(page) {
               tetap menyesuaikan lokasi, kebutuhan, dan budget.
             </p>
           </header>
-          ${renderServiceModelGallery(page, models)}
+          ${renderServiceModelGallery(catalogSection)}
+          <div class="service-model-catalog__action">
+            <a
+              class="button button--green"
+              href="${buildWhatsAppUrl(page.heading)}"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <i data-lucide="message-circle" aria-hidden="true"></i>
+              ${escapeHtml(catalogSection.ctaLabel)}
+            </a>
+          </div>
         </div>
       </section>`;
 }
@@ -314,7 +314,7 @@ function renderPage(page) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/styles.css?v=${serviceAssetVersion}">
     <script type="application/ld+json">${renderJsonLd(serviceSchema)}</script>
     <script type="application/ld+json">${renderJsonLd(breadcrumbSchema)}</script>
     <script type="application/ld+json">${renderJsonLd(faqSchema)}</script>
@@ -482,7 +482,7 @@ ${renderServiceModelCatalog(page)}
     </a>
 
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script type="module" src="/assets/js/service-page.js"></script>
+    <script type="module" src="/assets/js/service-page.js?v=${serviceAssetVersion}"></script>
   </body>
 </html>
 `;
