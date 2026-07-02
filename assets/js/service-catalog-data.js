@@ -1,9 +1,7 @@
-const baseImagePath = "assets/images/service-catalog/meja-kursi-sekolah-gallery";
-
-function catalogItem(id, title, description, alt) {
+function catalogItem(serviceSlug, baseImagePath, id, title, description, alt) {
   return {
     id,
-    serviceSlug: "meja-kursi-sekolah-makassar",
+    serviceSlug,
     title,
     description,
     image: `${baseImagePath}/${id}.webp`,
@@ -12,71 +10,166 @@ function catalogItem(id, title, description, alt) {
   };
 }
 
-export const serviceModelCatalogItems = [
-  catalogItem(
-    "meja-siswa-single-kayu",
-    "Meja Siswa Single Kayu",
-    "Meja siswa single dengan permukaan kayu natural dan rangka besi hitam.",
-    "Meja siswa single kayu natural dengan rangka besi hitam di ruang kelas sederhana",
+function catalogSection(serviceSlug, heading, ctaLabel, baseImagePath, items) {
+  return {
+    serviceSlug,
+    heading,
+    ctaLabel,
+    items: items.map(([id, title, description, alt]) =>
+      catalogItem(serviceSlug, baseImagePath, id, title, description, alt),
+    ),
+  };
+}
+
+export const serviceModelCatalogSections = [
+  catalogSection(
+    "meja-kursi-sekolah-makassar",
+    "Inspirasi Model Meja & Kursi Sekolah",
+    "Konsultasi model meja kursi sekolah",
+    "assets/images/service-catalog/meja-kursi-sekolah-gallery",
+    [
+      [
+        "meja-siswa-single-kayu",
+        "Meja Siswa Single Kayu",
+        "Meja siswa single dengan permukaan kayu natural dan rangka besi hitam.",
+        "Meja siswa single kayu natural dengan rangka besi hitam di ruang kelas sederhana",
+      ],
+      [
+        "kursi-siswa-kayu",
+        "Kursi Siswa Kayu",
+        "Kursi siswa kayu natural dengan rangka besi hitam untuk ruang belajar.",
+        "Kursi siswa kayu natural dengan rangka besi hitam di ruang kelas sederhana",
+      ],
+      [
+        "set-meja-kursi-siswa",
+        "Set Meja Kursi Siswa",
+        "Set meja dan kursi siswa dengan kayu natural dan rangka hitam.",
+        "Set meja kursi siswa kayu natural dan rangka besi hitam di ruang kelas",
+      ],
+      [
+        "meja-siswa-double-kayu",
+        "Meja Siswa Double Kayu",
+        "Meja siswa double untuk dua anak dengan rangka besi hitam.",
+        "Meja siswa double kayu natural dengan rangka besi hitam di ruang kelas",
+      ],
+      [
+        "meja-guru-sederhana",
+        "Meja Guru Sederhana",
+        "Meja guru sederhana dengan top kayu natural dan rangka kokoh.",
+        "Meja guru sederhana kayu natural dengan rangka besi hitam di ruang kelas",
+      ],
+      [
+        "kursi-guru-kayu",
+        "Kursi Guru Kayu",
+        "Kursi guru kayu natural dengan rangka besi hitam yang kokoh.",
+        "Kursi guru kayu natural dengan rangka besi hitam di ruang kelas sederhana",
+      ],
+      [
+        "set-tk-sd-kayu-natural",
+        "Set TK/SD Kayu Natural",
+        "Set meja kursi ukuran rendah untuk TK atau SD dengan warna natural.",
+        "Set meja kursi TK atau SD kayu natural dengan rangka besi hitam di ruang kelas",
+      ],
+      [
+        "meja-panjang-ruang-kelas",
+        "Meja Panjang Ruang Kelas",
+        "Meja panjang kayu natural untuk belajar kelompok atau ruang kelas.",
+        "Meja panjang ruang kelas dengan top kayu natural dan rangka besi hitam",
+      ],
+      [
+        "meja-lipat-sekolah-kayu",
+        "Meja Lipat Sekolah Kayu",
+        "Meja lipat sekolah dengan permukaan kayu natural dan kaki besi hitam.",
+        "Meja lipat sekolah kayu natural dengan kaki besi hitam di ruang kelas",
+      ],
+      [
+        "bangku-panjang-sekolah-kayu",
+        "Bangku Panjang Sekolah Kayu",
+        "Bangku panjang kayu natural dengan rangka hitam untuk area sekolah.",
+        "Bangku panjang sekolah kayu natural dengan rangka besi hitam di area sekolah",
+      ],
+    ],
   ),
-  catalogItem(
-    "kursi-siswa-kayu",
-    "Kursi Siswa Kayu",
-    "Kursi siswa kayu natural dengan rangka besi hitam untuk ruang belajar.",
-    "Kursi siswa kayu natural dengan rangka besi hitam di ruang kelas sederhana",
-  ),
-  catalogItem(
-    "set-meja-kursi-siswa",
-    "Set Meja Kursi Siswa",
-    "Set meja dan kursi siswa dengan kayu natural dan rangka hitam.",
-    "Set meja kursi siswa kayu natural dan rangka besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "meja-siswa-double-kayu",
-    "Meja Siswa Double Kayu",
-    "Meja siswa double untuk dua anak dengan rangka besi hitam.",
-    "Meja siswa double kayu natural dengan rangka besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "meja-guru-sederhana",
-    "Meja Guru Sederhana",
-    "Meja guru sederhana dengan top kayu natural dan rangka kokoh.",
-    "Meja guru sederhana kayu natural dengan rangka besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "kursi-guru-kayu",
-    "Kursi Guru Kayu",
-    "Kursi guru kayu natural dengan rangka besi hitam yang kokoh.",
-    "Kursi guru kayu natural dengan rangka besi hitam di ruang kelas sederhana",
-  ),
-  catalogItem(
-    "set-tk-sd-kayu-natural",
-    "Set TK/SD Kayu Natural",
-    "Set meja kursi ukuran rendah untuk TK atau SD dengan warna natural.",
-    "Set meja kursi TK atau SD kayu natural dengan rangka besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "meja-panjang-ruang-kelas",
-    "Meja Panjang Ruang Kelas",
-    "Meja panjang kayu natural untuk belajar kelompok atau ruang kelas.",
-    "Meja panjang ruang kelas dengan top kayu natural dan rangka besi hitam",
-  ),
-  catalogItem(
-    "meja-lipat-sekolah-kayu",
-    "Meja Lipat Sekolah Kayu",
-    "Meja lipat sekolah dengan permukaan kayu natural dan kaki besi hitam.",
-    "Meja lipat sekolah kayu natural dengan kaki besi hitam di ruang kelas",
-  ),
-  catalogItem(
-    "bangku-panjang-sekolah-kayu",
-    "Bangku Panjang Sekolah Kayu",
-    "Bangku panjang kayu natural dengan rangka hitam untuk area sekolah.",
-    "Bangku panjang sekolah kayu natural dengan rangka besi hitam di area sekolah",
+  catalogSection(
+    "pagar-besi-makassar",
+    "Inspirasi Model Pagar Besi",
+    "Konsultasi model pagar besi",
+    "assets/images/service-catalog/pagar-besi-gallery",
+    [
+      [
+        "pagar-besi-minimalis-hollow",
+        "Pagar Besi Minimalis Hollow",
+        "Pagar besi hollow hitam dengan susunan vertikal yang rapi untuk fasad rumah.",
+        "Pagar besi minimalis hollow warna hitam di depan rumah modern sederhana",
+      ],
+      [
+        "pagar-besi-geser-minimalis",
+        "Pagar Besi Geser Minimalis",
+        "Pagar geser minimalis dengan bilah horizontal hitam untuk bukaan rumah.",
+        "Pagar besi geser minimalis warna hitam dengan rel pada halaman rumah",
+      ],
+      [
+        "pagar-besi-kombinasi-plat",
+        "Pagar Besi Kombinasi Plat",
+        "Pagar kombinasi rangka dan plat hitam untuk tampilan lebih tertutup.",
+        "Pagar besi kombinasi plat hitam dengan rangka pada fasad rumah modern",
+      ],
+      [
+        "pagar-besi-lipat-ruko",
+        "Pagar Besi Lipat Ruko",
+        "Pagar besi lipat untuk bukaan lebar pada garasi, ruko, atau area usaha.",
+        "Pagar besi lipat hitam pada bukaan lebar garasi atau ruko modern",
+      ],
+      [
+        "pagar-besi-laser-cut",
+        "Pagar Besi Laser Cut",
+        "Pagar besi hitam dengan aksen panel laser cut untuk tampilan dekoratif.",
+        "Pagar besi hitam dengan panel motif laser cut di depan rumah modern",
+      ],
+      [
+        "pagar-besi-klasik-modern",
+        "Pagar Besi Klasik Modern",
+        "Pagar besi hitam bergaya klasik modern dengan detail vertikal kokoh.",
+        "Pagar besi klasik modern warna hitam dengan detail vertikal di rumah",
+      ],
+      [
+        "pagar-besi-kombinasi-kayu",
+        "Pagar Besi Kombinasi Kayu",
+        "Pagar besi hitam dengan aksen kayu natural untuk fasad yang lebih hangat.",
+        "Pagar besi hitam kombinasi kayu natural di depan rumah modern tropis",
+      ],
+      [
+        "pagar-besi-tinggi-privasi",
+        "Pagar Besi Tinggi Privasi",
+        "Pagar besi tinggi dengan kerapatan rapat untuk kebutuhan privasi rumah.",
+        "Pagar besi tinggi warna hitam dengan susunan rapat untuk privasi rumah",
+      ],
+      [
+        "pagar-besi-bengkel-preview",
+        "Pagar Besi Bengkel Preview",
+        "Preview pagar besi hitam di area bengkel sebelum dibawa ke lokasi.",
+        "Pagar besi hitam di area bengkel sebagai contoh model sebelum pemasangan",
+      ],
+      [
+        "pagar-besi-gerbang-lebar",
+        "Pagar Besi Gerbang Lebar",
+        "Pagar gerbang lebar dengan garis horizontal hitam untuk akses kendaraan.",
+        "Pagar besi gerbang lebar warna hitam dengan bukaan kendaraan di rumah",
+      ],
+    ],
   ),
 ];
 
-export function getServiceModelCatalog(serviceSlug) {
-  return serviceModelCatalogItems.filter(
-    (item) => item.serviceSlug === serviceSlug,
+export const serviceModelCatalogItems = serviceModelCatalogSections.flatMap(
+  (section) => section.items,
+);
+
+export function getServiceModelCatalogSection(serviceSlug) {
+  return serviceModelCatalogSections.find(
+    (section) => section.serviceSlug === serviceSlug,
   );
+}
+
+export function getServiceModelCatalog(serviceSlug) {
+  return getServiceModelCatalogSection(serviceSlug)?.items ?? [];
 }

@@ -278,3 +278,24 @@ test("school furniture page renders model catalog examples", async () => {
   assert.match(html, /Konsultasi model meja kursi sekolah/);
   assert.match(html, /meja-kursi-sekolah-gallery\/meja-siswa-single-kayu\.webp/);
 });
+
+test("iron fence page renders model catalog examples", async () => {
+  const html = await readFile(
+    path.join(root, "layanan", "pagar-besi-makassar.html"),
+    "utf8",
+  );
+  const itemCount = (html.match(/class="service-model-gallery__item"/g) || []).length;
+
+  assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, />Galeri model</);
+  assert.match(html, />Inspirasi Model Pagar Besi</);
+  assert.match(html, /contoh model pesanan/i);
+  assert.equal(itemCount, 10);
+  assert.match(html, /Pagar Besi Minimalis Hollow/);
+  assert.match(html, /Pagar Besi Laser Cut/);
+  assert.match(html, /Pagar Besi Gerbang Lebar/);
+  assert.doesNotMatch(html, /Tanyakan model ini/);
+  assert.match(html, /Konsultasi model pagar besi/);
+  assert.doesNotMatch(html, /Inspirasi Model Meja &amp; Kursi Sekolah/);
+  assert.match(html, /pagar-besi-gallery\/pagar-besi-minimalis-hollow\.webp/);
+});

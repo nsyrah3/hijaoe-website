@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import sharp from "sharp";
 import { serviceModelCatalogItems } from "../assets/js/service-catalog-data.js";
 
-test("all school furniture service catalog images exist as optimized WebP", async () => {
+test("all service catalog images exist as optimized WebP", async () => {
   for (const item of serviceModelCatalogItems) {
     const imagePath = path.resolve(item.image);
     const stat = await fs.stat(imagePath);

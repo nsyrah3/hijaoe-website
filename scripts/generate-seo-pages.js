@@ -9,7 +9,7 @@ import {
   business,
   processSteps,
 } from "../assets/js/site-data.js";
-import { getServiceModelCatalog } from "../assets/js/service-catalog-data.js";
+import { getServiceModelCatalogSection } from "../assets/js/service-catalog-data.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = path.join(root, "layanan");
@@ -140,9 +140,9 @@ function renderServiceModelGalleryItems(models) {
 }
 
 function renderServiceModelCatalog(page) {
-  const models = getServiceModelCatalog(page.slug);
+  const catalogSection = getServiceModelCatalogSection(page.slug);
 
-  if (models.length === 0) {
+  if (!catalogSection || catalogSection.items.length === 0) {
     return "";
   }
 
@@ -152,7 +152,7 @@ function renderServiceModelCatalog(page) {
           <header class="service-model-catalog__header">
             <div>
               <p class="eyebrow eyebrow--dark">Galeri model</p>
-              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">Inspirasi Model Meja &amp; Kursi Sekolah</h2>
+              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">${escapeHtml(catalogSection.heading)}</h2>
             </div>
             <p>
               Gambar berikut adalah contoh model pesanan untuk memudahkan
@@ -160,7 +160,7 @@ function renderServiceModelCatalog(page) {
               tetap menyesuaikan lokasi, kebutuhan, dan budget.
             </p>
           </header>
-          <div class="service-model-gallery">${renderServiceModelGalleryItems(models)}</div>
+          <div class="service-model-gallery">${renderServiceModelGalleryItems(catalogSection.items)}</div>
           <div class="service-model-catalog__action">
             <a
               class="button button--green"
@@ -169,7 +169,7 @@ function renderServiceModelCatalog(page) {
               rel="noreferrer"
             >
               <i data-lucide="message-circle" aria-hidden="true"></i>
-              Konsultasi model meja kursi sekolah
+              ${escapeHtml(catalogSection.ctaLabel)}
             </a>
           </div>
         </div>
