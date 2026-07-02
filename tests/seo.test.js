@@ -263,13 +263,18 @@ test("school furniture page renders model catalog examples", async () => {
     path.join(root, "layanan", "meja-kursi-sekolah-makassar.html"),
     "utf8",
   );
-  const itemCount = (html.match(/class="service-model-gallery__item"/g) || []).length;
+  const thumbCount = (html.match(/data-service-model-thumb/g) || []).length;
 
   assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, /data-service-model-gallery/);
+  assert.match(html, /class="service-model-gallery__stage"/);
+  assert.match(html, /data-service-model-preview-image/);
+  assert.match(html, /data-service-model-preview-title/);
   assert.match(html, />Galeri model</);
   assert.match(html, />Inspirasi Model Meja &amp; Kursi Sekolah</);
   assert.match(html, /contoh model pesanan/i);
-  assert.equal(itemCount, 10);
+  assert.equal(thumbCount, 10);
+  assert.match(html, /aria-pressed="true"/);
   assert.match(html, /Meja Siswa Single Kayu/);
   assert.match(html, /Meja Guru Sederhana/);
   assert.match(html, /Bangku Panjang Sekolah Kayu/);
@@ -284,13 +289,18 @@ test("iron fence page renders model catalog examples", async () => {
     path.join(root, "layanan", "pagar-besi-makassar.html"),
     "utf8",
   );
-  const itemCount = (html.match(/class="service-model-gallery__item"/g) || []).length;
+  const thumbCount = (html.match(/data-service-model-thumb/g) || []).length;
 
   assert.match(html, /class="section service-model-catalog"/);
+  assert.match(html, /data-service-model-gallery/);
+  assert.match(html, /class="service-model-gallery__stage"/);
+  assert.match(html, /data-service-model-preview-image/);
+  assert.match(html, /data-service-model-preview-title/);
   assert.match(html, />Galeri model</);
   assert.match(html, />Inspirasi Model Pagar Besi</);
   assert.match(html, /contoh model pesanan/i);
-  assert.equal(itemCount, 10);
+  assert.equal(thumbCount, 10);
+  assert.match(html, /aria-pressed="true"/);
   assert.match(html, /Pagar Besi Minimalis Hollow/);
   assert.match(html, /Pagar Besi Laser Cut/);
   assert.match(html, /Pagar Besi Gerbang Lebar/);

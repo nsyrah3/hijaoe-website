@@ -122,21 +122,62 @@ function renderProcess() {
     .join("");
 }
 
-function renderServiceModelGalleryItems(models) {
+function renderServiceModelGalleryThumbs(models) {
   return models
-    .map(
-      (modelItem) => `<figure class="service-model-gallery__item">
+    .map((modelItem, index) => {
+      const imagePath = `/${modelItem.image}`;
+
+      return `<button
+              class="service-model-gallery__thumb"
+              type="button"
+              data-service-model-thumb
+              data-service-model-image="${escapeHtml(imagePath)}"
+              data-service-model-alt="${escapeHtml(modelItem.alt)}"
+              data-service-model-title="${escapeHtml(modelItem.title)}"
+              aria-pressed="${String(index === 0)}"
+            >
               <img
-                src="/${escapeHtml(modelItem.image)}"
-                alt="${escapeHtml(modelItem.alt)}"
+                src="${escapeHtml(imagePath)}"
+                alt=""
+                loading="lazy"
+                width="160"
+                height="120"
+                aria-hidden="true"
+              >
+              <span>${escapeHtml(modelItem.title)}</span>
+            </button>`;
+    })
+    .join("");
+}
+
+function renderServiceModelGallery(catalogSection) {
+  const [activeModel] = catalogSection.items;
+  const activeImage = `/${activeModel.image}`;
+
+  return `<div
+            class="service-model-gallery"
+            data-service-model-gallery
+            aria-label="${escapeHtml(catalogSection.heading)}"
+          >
+            <article class="service-model-gallery__stage">
+              <img
+                src="${escapeHtml(activeImage)}"
+                alt="${escapeHtml(activeModel.alt)}"
                 loading="lazy"
                 width="640"
                 height="480"
+                data-service-model-preview-image
               >
-              <figcaption>${escapeHtml(modelItem.title)}</figcaption>
-            </figure>`,
-    )
-    .join("");
+              <div class="service-model-gallery__shade"></div>
+              <div class="service-model-gallery__content">
+                <p>Model aktif</p>
+                <h3 data-service-model-preview-title>${escapeHtml(activeModel.title)}</h3>
+              </div>
+            </article>
+            <div class="service-model-gallery__thumbs" aria-label="Pilih model">
+              ${renderServiceModelGalleryThumbs(catalogSection.items)}
+            </div>
+          </div>`;
 }
 
 function renderServiceModelCatalog(page) {
@@ -160,7 +201,7 @@ function renderServiceModelCatalog(page) {
               tetap menyesuaikan lokasi, kebutuhan, dan budget.
             </p>
           </header>
-          <div class="service-model-gallery">${renderServiceModelGalleryItems(catalogSection.items)}</div>
+          ${renderServiceModelGallery(catalogSection)}
           <div class="service-model-catalog__action">
             <a
               class="button button--green"

@@ -88,10 +88,10 @@ test("error page and service directory have dedicated layout rules", () => {
   assert.match(styles, /\.service-directory\s*\{/);
 });
 
-test("service model catalog has a compact responsive gallery", () => {
+test("service model catalog has an interactive preview gallery", () => {
   assert.match(
     styles,
-    /\.service-model-gallery\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s,
+    /\.service-model-gallery\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1\.35fr\)\s+minmax\(340px,\s*0\.65fr\);/s,
   );
   assert.doesNotMatch(
     baseStyles,
@@ -99,22 +99,26 @@ test("service model catalog has a compact responsive gallery", () => {
   );
   assert.match(
     styles,
-    /\.service-model-gallery__item img\s*\{[^}]*aspect-ratio:\s*5\s*\/\s*4;[^}]*object-fit:\s*cover;/s,
+    /\.service-model-gallery__stage\s*\{[^}]*min-height:\s*500px;[^}]*overflow:\s*hidden;/s,
   );
   assert.match(
     styles,
-    /\.service-model-gallery__item\s*\{[^}]*box-shadow:\s*0\s+10px\s+24px\s+rgba\(10,\s*15,\s*11,\s*0\.08\);/s,
+    /\.service-model-gallery__stage img\s*\{[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s,
   );
   assert.match(
     styles,
-    /\.service-model-gallery__item figcaption\s*\{[^}]*position:\s*absolute;[^}]*left:\s*6px;[^}]*right:\s*6px;[^}]*bottom:\s*6px;/s,
+    /\.service-model-gallery__thumbs\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[^}]*gap:\s*6px;/,
+    /\.service-model-gallery__thumb\[aria-pressed="true"\]\s*\{[^}]*border-color:\s*var\(--green-500\);/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__item figcaption\s*\{[^}]*font-size:\s*0\.54rem;/,
+    /@media \(max-width: 900px\)[\s\S]*?\.service-model-gallery\s*\{[^}]*grid-template-columns:\s*1fr;/,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 680px\)[\s\S]*?\.service-model-gallery__thumbs\s*\{[^}]*grid-auto-flow:\s*column;[^}]*overflow-x:\s*auto;/,
   );
 });
