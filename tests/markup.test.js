@@ -67,6 +67,10 @@ test("homepage static copy supports the broader South Sulawesi service area", ()
   assert.match(indexHtml, /Bulukumba/i);
   assert.match(indexHtml, /Palopo/i);
   assert.match(indexHtml, /Sulawesi Selatan/);
+  assert.match(
+    indexHtml,
+    /src="\/assets\/js\/main\.js\?v=20260702-sulsel-reach"/,
+  );
 });
 
 test("homepage mobile menu restores focus after Escape closes it", () => {
