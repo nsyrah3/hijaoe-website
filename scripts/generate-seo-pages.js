@@ -13,6 +13,7 @@ import { getServiceModelCatalogSection } from "../assets/js/service-catalog-data
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = path.join(root, "layanan");
+const serviceAssetVersion = "20260702-service-gallery";
 
 function escapeHtml(value) {
   return String(value)
@@ -313,7 +314,7 @@ function renderPage(page) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/styles.css?v=${serviceAssetVersion}">
     <script type="application/ld+json">${renderJsonLd(serviceSchema)}</script>
     <script type="application/ld+json">${renderJsonLd(breadcrumbSchema)}</script>
     <script type="application/ld+json">${renderJsonLd(faqSchema)}</script>
@@ -481,7 +482,7 @@ ${renderServiceModelCatalog(page)}
     </a>
 
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script type="module" src="/assets/js/service-page.js"></script>
+    <script type="module" src="/assets/js/service-page.js?v=${serviceAssetVersion}"></script>
   </body>
 </html>
 `;

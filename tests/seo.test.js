@@ -104,6 +104,26 @@ test("generated service schemas are valid JSON", async () => {
   }
 });
 
+test("generated service pages load cache-busted service assets", async () => {
+  for (const page of seoPages) {
+    const html = await readFile(
+      path.join(root, "layanan", `${page.slug}.html`),
+      "utf8",
+    );
+
+    assert.match(
+      html,
+      /<link rel="stylesheet" href="\/assets\/css\/styles\.css\?v=20260702-service-gallery">/,
+      page.slug,
+    );
+    assert.match(
+      html,
+      /<script type="module" src="\/assets\/js\/service-page\.js\?v=20260702-service-gallery"><\/script>/,
+      page.slug,
+    );
+  }
+});
+
 test("generated pages link only to known related services", () => {
   const slugs = new Set(seoPages.map((page) => page.slug));
   for (const page of seoPages) {
