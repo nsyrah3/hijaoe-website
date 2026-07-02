@@ -247,3 +247,28 @@ test("AI service visuals are not presented as completed customer projects", asyn
     assert.doesNotMatch(html, /hasil proyek|proyek pelanggan|hasil pekerjaan HIJAOE/i);
   }
 });
+
+test("service model pages render large preview galleries", async () => {
+  for (const [slug, heading, firstModel] of [
+    [
+      "meja-kursi-sekolah-makassar",
+      "Inspirasi Model Meja &amp; Kursi Sekolah",
+      "Meja Siswa Single Kayu",
+    ],
+    ["kanopi-makassar", "Inspirasi Model Kanopi", "Kanopi Alderon Carport Minimalis"],
+  ]) {
+    const html = await readFile(path.join(root, "layanan", `${slug}.html`), "utf8");
+
+    assert.match(html, /class="section service-model-catalog"/);
+    assert.match(html, />Galeri model</);
+    assert.match(html, new RegExp(heading));
+    assert.match(html, /Gambar berikut adalah contoh model pesanan untuk memudahkan/);
+    assert.match(html, /class="service-model-gallery"/);
+    assert.match(html, /class="service-model-gallery__stage"/);
+    assert.match(html, /data-service-model-preview-image/);
+    assert.match(html, /data-service-model-thumb/);
+    assert.match(html, new RegExp(firstModel));
+    assert.equal((html.match(/data-service-model-thumb/g) || []).length, 10);
+    assert.doesNotMatch(html, /class="service-model-card"/);
+  }
+});

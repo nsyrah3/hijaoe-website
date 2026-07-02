@@ -24,11 +24,11 @@ test("continues a restored session without replaying the welcome message", () =>
   assert.equal(result.session.data.location, "Gowa");
   assert.equal(result.session.state, "dimensions");
   assert.deepEqual(result.messages, [
-    "Kalau sudah ada, berapa ukuran perkiraannya? Kalau belum tahu, bilang belum tahu juga tidak apa-apa.",
+    "Kalau sudah ada, berapa ukuran perkiraannya? Kalau belum tahu, tidak apa-apa.",
   ]);
 });
 
-test("assistant opening creates a fresh session and asks for the name", () => {
+test("assistant opening creates a fresh session and asks for the work first", () => {
   const session = createSession("628123456789");
   const defaultSession = createSession();
   const result = startConversation(session);
@@ -44,6 +44,7 @@ test("assistant opening creates a fresh session and asks for the name", () => {
     material: "",
     targetTime: "",
     photoReferences: "",
+    customerQuestions: "",
     email: "",
     emailMarketingConsent: "Tidak",
   });
@@ -51,11 +52,10 @@ test("assistant opening creates a fresh session and asks for the name", () => {
   assert.equal(session.handoffReason, "");
   assert.equal(session.completed, false);
 
-  assert.equal(result.session.state, "name");
+  assert.equal(result.session.state, "service");
   assert.equal(result.session.whatsappNumber, "628123456789");
   assert.deepEqual(result.messages, [
-    "Halo, Kak. Saya Asisten HIJAOE. Saya bantu catat kebutuhan awalnya dulu, lalu admin kami akan lanjutkan.",
-    "Boleh tahu namanya, Kak?",
+    "Halo Kak, bisa. Mau bikin atau kerjakan apa?",
   ]);
   assert.equal(result.lead, null);
 });
@@ -78,13 +78,13 @@ test("assistant collects a complete brief and creates one lead", () => {
   let session = startConversation(createSession("628123456789")).session;
 
   for (const reply of [
-    "Rina",
     "Pagar geser besi",
     "Panakkukang",
     "Lebar 4 meter, tinggi 1,8 meter",
     "Besi hollow model minimalis",
     "Bulan depan",
     "lewati",
+    "Rina",
     "rina@example.com",
     "ya",
   ]) {
@@ -246,7 +246,7 @@ test("confirmation email correction asks marketing consent for a new email", () 
   assert.equal(result.lead, null);
   assert.equal(
     result.messages[0],
-    "Apakah Kakak bersedia menerima informasi dan penawaran HIJAOE melalui email? Jawab ya atau tidak.",
+    "Kakak bersedia menerima info dan penawaran HIJAOE lewat email? Jawab ya atau tidak.",
   );
 });
 

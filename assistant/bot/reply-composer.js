@@ -1,6 +1,7 @@
 import { buildModelContext } from "../privacy.js";
 
 const RESTRICTED_OUTPUT = [
+  /\b(?:ai|bot|asisten|assistant|otomasi|sistem)\b/i,
   /\bRp\s?[\d.,]+/i,
   /\b\d+(?:[.,]\d+)?\s*(?:ribu|juta|jt)\b/i,
   /\bharga(?:nya)?\s+(?:sekitar|mulai|hanya)?/i,
@@ -70,10 +71,11 @@ export function buildRewriteMessages({ fallback, customerMessage, session }) {
     {
       role: "system",
       content: [
-        "Tulis ulang balasan Asisten HIJAOE agar ramah, singkat, dan natural.",
-        "Pertahankan fakta dan pertanyaan yang sama.",
+        "Tulis sebagai admin HIJAOE yang membalas WhatsApp pelanggan.",
+        "Bahasa Indonesia sehari-hari, singkat, sopan, dan natural.",
+        "Jaga maksud dan satu pertanyaan yang sama.",
+        "Jangan menyebut AI, bot, asisten, sistem, template, atau otomasi.",
         "Jangan menambah harga, jadwal, jaminan, diskon, ketersediaan bahan, atau informasi baru.",
-        "Gunakan sapaan Kak.",
         "Balas hanya dengan teks yang akan dikirim ke pelanggan.",
       ].join(" "),
     },

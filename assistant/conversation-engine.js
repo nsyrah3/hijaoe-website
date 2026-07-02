@@ -47,12 +47,14 @@ export function createSession(whatsappNumber = "") {
 }
 
 export function startConversation(session) {
+  const firstField = FIELD_DEFINITIONS[0];
+
   return {
     session: {
       ...session,
-      state: "name",
+      state: firstField.state,
     },
-    messages: [OPENING_MESSAGE, FIELD_BY_STATE.get("name").prompt],
+    messages: [OPENING_MESSAGE],
     lead: null,
   };
 }
@@ -152,6 +154,7 @@ export function buildSummary(session) {
     `Bahan atau model: ${summaryValue(data.material)}`,
     `Target waktu: ${summaryValue(data.targetTime)}`,
     `Foto referensi: ${summaryValue(data.photoReferences)}`,
+    `Pertanyaan customer: ${summaryValue(data.customerQuestions)}`,
     `Email: ${summaryValue(data.email)}`,
     `Izin email promosi: ${summaryValue(data.emailMarketingConsent)}`,
     "",
@@ -174,7 +177,7 @@ export function buildLead(session, now = new Date()) {
     dimensions: data.dimensions,
     material_or_style: data.material,
     target_time: data.targetTime,
-    notes: "",
+    notes: data.customerQuestions,
     photo_references: data.photoReferences,
     conversation_summary: buildSummary(session),
     handoff_reason:

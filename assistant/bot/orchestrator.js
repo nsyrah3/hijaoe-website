@@ -12,15 +12,136 @@ export function createBotOrchestrator({
   sender,
   syncService,
   composeReply,
+  runConversation,
   clock = Date.now,
   maxMessageAgeSeconds = 600,
   takeoverHours = 24,
   replyDelayMs = 1200,
+  batchWindowMs = 0,
+  setTimeoutImpl = setTimeout,
+  clearTimeoutImpl = clearTimeout,
   logger = console,
 }) {
   const pendingBotSends = new Map();
+  const pendingBatches = new Map();
+  const conversationRunner =
+    runConversation ||
+    (({ session, messages, now }) =>
+      handleMessage(session, messages.join("\n"), { now }));
 
-  return {
+  async function processIncomingBatch({ number, chatId, messages, now }) {
+    let pendingFingerprint = "";
+
+    try {
+      let previousSession =
+        store.loadSession(number) ||
+        createSession(number);
+      const pauseUntil = store.getPauseUntil?.(number) ?? null;
+      if (pauseUntil !== null && pauseUntil <= now) {
+        store.clearPause?.(number);
+        if (
+          previousSession.state === "handoff" ||
+          previousSession.state === "closed"
+        ) {
+          previousSession = createSession(number);
+        }
+      }
+
+      const prepared = await prepareCustomerBatch({
+        messages,
+        session: previousSession,
+        syncService,
+        number,
+      });
+      const result = await conversationRunner({
+        session: previousSession,
+        messages: prepared.texts,
+        now: new Date(now),
+      });
+
+      if (!result.messages.length) {
+        store.saveSession(number, result.session, now);
+        recordLastMessage(store, now);
+        return { action: "silent", session: result.session };
+      }
+
+      const text = result.replyIsFinal
+        ? result.messages.filter(Boolean).join("\n\n").trim()
+        : await composeReply({
+            deterministicMessages: result.messages,
+            customerMessage: prepared.texts.join("\n"),
+            session: result.session,
+          });
+      if (!text) {
+        return { action: "error", reason: "EmptyReply" };
+      }
+
+      if (replyDelayMs > 0) {
+        await delay(replyDelayMs);
+      }
+
+      pendingFingerprint = botFingerprint(number, text);
+      pendingBotSends.set(pendingFingerprint, clock() + 30_000);
+      const outboundId = await sender.sendText(number, text, chatId);
+      if (outboundId) {
+        store.recordBotOutbound(outboundId, number, clock());
+      }
+      store.saveSession(number, result.session, clock());
+      recordLastMessage(store, clock());
+
+      if (result.lead) {
+        const lead = {
+          ...result.lead,
+          drive_folder_url: prepared.driveFolderUrl || "",
+          photo_urls: prepared.driveUrl
+            ? [prepared.driveUrl]
+            : extractUrls(result.lead.photo_references),
+        };
+        await syncService.syncConfirmedLead(number, lead);
+      }
+
+      return {
+        action: "replied",
+        outboundId,
+        session: result.session,
+      };
+    } catch (error) {
+      if (pendingFingerprint) {
+        pendingBotSends.delete(pendingFingerprint);
+      }
+      logger?.error?.(
+        JSON.stringify({
+          event: "incoming_message_failed",
+          error: safeErrorName(error),
+        }),
+      );
+      return { action: "error", reason: safeErrorName(error) };
+    }
+  }
+
+  function queueIncoming({ number, message }) {
+    const existing = pendingBatches.get(number);
+    if (existing?.timer) {
+      clearTimeoutImpl(existing.timer);
+    }
+
+    const batch = existing || {
+      number,
+      chatId: message.chatId,
+      messages: [],
+      timer: null,
+    };
+    batch.chatId = message.chatId || batch.chatId;
+    batch.messages.push(message);
+    batch.timer = setTimeoutImpl(
+      () => void api.flushPending(number),
+      batchWindowMs,
+    );
+    batch.timer?.unref?.();
+    pendingBatches.set(number, batch);
+  }
+
+  const api = {
     async handleIncoming(message) {
       const now = clock();
       const number = message.number || privateNumber(message.chatId);
@@ -59,92 +180,17 @@ export function createBotOrchestrator({
         return { action: "ignored", reason: "duplicate" };
       }
 
-      let pendingFingerprint = "";
-
-      try {
-        let previousSession =
-          store.loadSession(classification.number) ||
-          createSession(classification.number);
-        if (pauseUntil !== null && pauseUntil <= now) {
-          store.clearPause?.(classification.number);
-          if (
-            previousSession.state === "handoff" ||
-            previousSession.state === "closed"
-          ) {
-            previousSession = createSession(classification.number);
-          }
-        }
-
-        const prepared = await prepareCustomerInput({
-          message,
-          session: previousSession,
-          syncService,
-          number: classification.number,
-        });
-        const result = handleMessage(previousSession, prepared.text, {
-          now: new Date(now),
-        });
-
-        if (!result.messages.length) {
-          store.saveSession(classification.number, result.session, now);
-          recordLastMessage(store, now);
-          return { action: "silent", session: result.session };
-        }
-
-        const text = await composeReply({
-          deterministicMessages: result.messages,
-          customerMessage: prepared.text,
-          session: result.session,
-        });
-        if (!text) {
-          return { action: "error", reason: "EmptyReply" };
-        }
-
-        if (replyDelayMs > 0) {
-          await delay(replyDelayMs);
-        }
-
-        pendingFingerprint = botFingerprint(classification.number, text);
-        pendingBotSends.set(pendingFingerprint, clock() + 30_000);
-        const outboundId = await sender.sendText(
-          classification.number,
-          text,
-          message.chatId,
-        );
-        if (outboundId) {
-          store.recordBotOutbound(outboundId, classification.number, clock());
-        }
-        store.saveSession(classification.number, result.session, clock());
-        recordLastMessage(store, clock());
-
-        if (result.lead) {
-          const lead = {
-            ...result.lead,
-            drive_folder_url: prepared.driveFolderUrl || "",
-            photo_urls: prepared.driveUrl
-              ? [prepared.driveUrl]
-              : extractUrls(result.lead.photo_references),
-          };
-          await syncService.syncConfirmedLead(classification.number, lead);
-        }
-
-        return {
-          action: "replied",
-          outboundId,
-          session: result.session,
-        };
-      } catch (error) {
-        if (pendingFingerprint) {
-          pendingBotSends.delete(pendingFingerprint);
-        }
-        logger?.error?.(
-          JSON.stringify({
-            event: "incoming_message_failed",
-            error: safeErrorName(error),
-          }),
-        );
-        return { action: "error", reason: safeErrorName(error) };
+      if (batchWindowMs > 0) {
+        queueIncoming({ number: classification.number, message });
+        return { action: "queued" };
       }
+
+      return processIncomingBatch({
+        number: classification.number,
+        chatId: message.chatId,
+        messages: [message],
+        now,
+      });
     },
 
     async handleOwnMessage(message) {
@@ -185,6 +231,51 @@ export function createBotOrchestrator({
         pausedUntil,
       };
     },
+
+    async flushPending(number) {
+      const batch = pendingBatches.get(number);
+      if (!batch) {
+        return { action: "ignored", reason: "no_pending_batch" };
+      }
+      if (batch.timer) {
+        clearTimeoutImpl(batch.timer);
+      }
+      pendingBatches.delete(number);
+      return processIncomingBatch({
+        number: batch.number,
+        chatId: batch.chatId,
+        messages: batch.messages,
+        now: clock(),
+      });
+    },
+  };
+
+  return api;
+}
+
+async function prepareCustomerBatch({ messages, session, syncService, number }) {
+  const prepared = [];
+  let driveUrl = "";
+  let driveFolderUrl = "";
+
+  for (const message of messages) {
+    const item = await prepareCustomerInput({
+      message,
+      session,
+      syncService,
+      number,
+    });
+    if (item.text) {
+      prepared.push(item.text);
+    }
+    driveUrl = item.driveUrl || driveUrl;
+    driveFolderUrl = item.driveFolderUrl || driveFolderUrl;
+  }
+
+  return {
+    texts: prepared,
+    driveUrl,
+    driveFolderUrl,
   };
 }
 
@@ -214,8 +305,12 @@ async function prepareCustomerInput({
     };
   }
 
+  const photoContext = uploaded.ok
+    ? `[Foto diterima: ${uploaded.driveUrl}]`
+    : "[Foto diterima, belum tersimpan ke Drive]";
+
   return {
-    text: text || (uploaded.ok ? "Foto sudah dikirim" : "Foto dikirim"),
+    text: text ? `${text}\n${photoContext}` : photoContext,
     driveUrl: uploaded.driveUrl || "",
     driveFolderUrl: uploaded.driveFolderUrl || "",
   };

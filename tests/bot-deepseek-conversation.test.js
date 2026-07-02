@@ -1,0 +1,842 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+  buildSummary,
+  createSession,
+} from "../assistant/conversation-engine.js";
+import {
+  buildConversationMessages,
+  runDeepSeekConversation,
+} from "../assistant/bot/deepseek-conversation.js";
+import { business } from "../assets/js/site-data.js";
+
+test("extracts lead fields and returns a natural DeepSeek reply", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["saya mau meja sekolah", "untuk daerah gowa"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Siap Kak, meja sekolah untuk Gowa ya. Ada ukuran atau jumlah meja yang dibutuhkan?",
+        dataPatch: { service: "Meja sekolah", location: "Gowa" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan butuh meja sekolah di Gowa.",
+      }),
+  });
+
+  assert.equal(result.replyIsFinal, true);
+  assert.equal(result.session.state, "active");
+  assert.equal(result.session.data.service, "Meja sekolah");
+  assert.equal(result.session.data.location, "Gowa");
+  assert.match(result.messages[0], /ukuran|jumlah/i);
+});
+
+test("allows a transparent AI intro on the first DeepSeek reply and marks it shown", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["halo kak"],
+    complete: async ({ messages }) => {
+      const prompt = JSON.stringify(messages);
+      assert.match(prompt, /introShown/);
+      assert.match(prompt, /asisten digital|AI/i);
+
+      return JSON.stringify({
+        reply:
+          "Halo Kak, saya AI agent HIJAOE. Saya bantu catat dulu kebutuhan Kakak. Mau dibantu buat apa?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan menyapa admin HIJAOE.",
+      });
+    },
+  });
+
+  assert.equal(result.session.introShown, true);
+  assert.match(result.messages[0], /AI agent HIJAOE/);
+});
+
+test("first intro prompt focuses on collecting lead info without promising admin forwarding", () => {
+  const messages = buildConversationMessages({
+    session: createSession("628111"),
+    messages: ["halo kak"],
+  });
+  const systemPrompt = messages[0].content;
+
+  assert.match(systemPrompt, /mencatat kebutuhan/i);
+  assert.doesNotMatch(systemPrompt, /menerus(?:kan|kannya)\s+ke\s+admin/i);
+  assert.doesNotMatch(systemPrompt, /teruskan\s+ke\s+admin/i);
+  assert.match(systemPrompt, /service/i);
+  assert.match(systemPrompt, /location/i);
+  assert.match(systemPrompt, /dimensions/i);
+  assert.match(systemPrompt, /material/i);
+  assert.match(systemPrompt, /targetTime/i);
+  assert.match(systemPrompt, /photoReferences/i);
+  assert.match(systemPrompt, /Belum ditentukan/i);
+  assert.match(systemPrompt, /bukan sales/i);
+  assert.match(systemPrompt, /tidak ada di session/i);
+});
+
+test("tells DeepSeek not to repeat the intro once it was shown", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["saya mau meja sekolah"],
+  });
+
+  const prompt = JSON.stringify(messages);
+  assert.match(prompt, /introShown/);
+  assert.match(prompt, /jangan ulangi intro/i);
+});
+
+test("sends contextual lead guidance for linear or area services", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Pagar rumah",
+      location: "Gowa",
+    },
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["saya mau buat pagar rumah di gowa"],
+  });
+  const payload = JSON.parse(messages[1].content);
+
+  assert.equal(payload.leadGuidance.serviceKind, "linear_or_area");
+  assert.deepEqual(payload.leadGuidance.missingRequiredFields, ["name"]);
+  assert.match(
+    payload.leadGuidance.suggestedNextQuestions.join(" "),
+    /ukuran|panjang|area|foto|nama/i,
+  );
+  assert.match(
+    payload.leadGuidance.avoidQuestions.join(" "),
+    /jumlah|unit|set/i,
+  );
+});
+
+test("asks project location as house or work address, not installation position", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["saya mau bikin pagar untuk rumah saya"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Tentu, Kak. Mau bikin pagar untuk rumah di area mana, ya?",
+        dataPatch: { service: "Pagar rumah" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin membuat pagar untuk rumah.",
+      }),
+  });
+
+  assert.equal(result.session.data.service, "Pagar rumah");
+  assert.notEqual(
+    result.messages[0],
+    "Tentu, Kak. Mau bikin pagar untuk rumah di area mana, ya?",
+  );
+  assert.match(result.messages[0], /lokasi rumah|lokasi pengerjaan|daerah rumah/i);
+  assert.doesNotMatch(result.messages[0], /pagar.*area mana|dipasang.*mana/i);
+});
+
+test("sends service-specific checklist guidance for common work types", () => {
+  const fenceMessages = buildConversationMessages({
+    session: {
+      ...createSession("628111"),
+      data: {
+        ...createSession("628111").data,
+        service: "Pagar rumah",
+        location: "Gowa",
+      },
+    },
+    messages: ["saya mau bikin pagar rumah"],
+  });
+  const fencePayload = JSON.parse(fenceMessages[1].content);
+
+  assert.match(
+    fencePayload.leadGuidance.serviceChecklist.join(" "),
+    /panjang|tinggi|foto lokasi|model/i,
+  );
+
+  const ceilingMessages = buildConversationMessages({
+    session: {
+      ...createSession("628111"),
+      data: {
+        ...createSession("628111").data,
+        service: "Plafon PVC",
+        location: "Makassar",
+      },
+    },
+    messages: ["plafon pvc untuk rumah"],
+  });
+  const ceilingPayload = JSON.parse(ceilingMessages[1].content);
+
+  assert.match(
+    ceilingPayload.leadGuidance.serviceChecklist.join(" "),
+    /panjang.*lebar|ruangan|foto/i,
+  );
+});
+
+test("sends quantity guidance for unit based services", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja & Kursi Sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["saya mau meja kursi sekolah di tamalanrea"],
+  });
+  const payload = JSON.parse(messages[1].content);
+
+  assert.equal(payload.leadGuidance.serviceKind, "unit_based");
+  assert.match(
+    payload.leadGuidance.suggestedNextQuestions.join(" "),
+    /jumlah|unit|set/i,
+  );
+  assert.doesNotMatch(
+    payload.leadGuidance.avoidQuestions.join(" "),
+    /jumlah|unit|set/i,
+  );
+});
+
+test("forces confirmation once minimum lead data is complete", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      name: "Ari",
+      service: "Pagar rumah",
+      location: "Gowa",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["atas nama ari"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak. Ada ukuran atau foto lokasi yang mau dikirim?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.equal(result.session.state, "confirming");
+  assert.match(result.messages[0], /Ringkasan kebutuhan awal/i);
+  assert.doesNotMatch(result.messages[0], /Ada ukuran atau foto lokasi/i);
+});
+
+test("guides DeepSeek to confirm when minimum lead data is complete", () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      name: "Nasroh",
+      service: "Pagar rumah",
+      location: "Gowa",
+      dimensions: "Belum ditentukan",
+      photoReferences: "Tidak ada referensi foto",
+    },
+  };
+
+  const messages = buildConversationMessages({
+    session,
+    messages: ["atas nama nasroh"],
+  });
+  const payload = JSON.parse(messages[1].content);
+
+  assert.equal(payload.leadGuidance.readyToConfirm, true);
+  assert.equal(payload.leadGuidance.suggestedNextStep, "confirm_lead");
+  assert.deepEqual(payload.leadGuidance.missingRequiredFields, []);
+  assert.match(
+    payload.leadGuidance.avoidQuestions.join(" "),
+    /jangan paksa data opsional/i,
+  );
+});
+
+test("answers HIJAOE address questions with the Google Maps link without calling DeepSeek", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["alamatnya di mana kak?"],
+    complete: async () => {
+      throw new Error("address questions should be answered without DeepSeek");
+    },
+  });
+
+  assert.equal(result.replyIsFinal, true);
+  assert.equal(result.lead, null);
+  assert.match(result.messages[0], /Bengkel HIJAOE/i);
+  assert.match(result.messages[0], /Makassar/i);
+  assert.match(result.messages[0], /Google Maps|maps/i);
+  assert.match(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+  assert.equal(result.session.data.location, "");
+});
+
+test("answers explicit Google Maps requests with the business map link", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["boleh minta google maps hijaoe"],
+    complete: async () => {
+      throw new Error("maps requests should be answered without DeepSeek");
+    },
+  });
+
+  assert.match(result.messages[0], /Google Maps|maps/i);
+  assert.match(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+});
+
+test("does not treat customer work location as a business address question", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["lokasi pengerjaan saya di Gowa"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Siap Kak, lokasi pengerjaan di Gowa saya catat. Mau dibantu buat apa?",
+        dataPatch: { location: "Gowa" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan menyebut lokasi pengerjaan di Gowa.",
+      }),
+  });
+
+  assert.equal(result.session.data.location, "Gowa");
+  assert.doesNotMatch(result.messages[0], new RegExp(escapeRegExp(business.mapUrl)));
+});
+
+test("falls back when DeepSeek returns invalid JSON", async () => {
+  const result = await runDeepSeekConversation({
+    session: createSession("628111"),
+    messages: ["halo"],
+    complete: async () => "{",
+  });
+
+  assert.equal(
+    result.messages[0],
+    "Maaf Kak, boleh dikirim ulang singkat kebutuhannya? Nanti saya catat untuk admin.",
+  );
+  assert.equal(result.session.state, "active");
+});
+
+test("does not ask for another photo after a photo was already received", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      photoReferences: "https://drive.google.com/file/d/photo/view",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: [
+      "itu kak modelnya\n[Foto diterima: https://drive.google.com/file/d/photo/view]",
+    ],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Silakan kirim fotonya, nanti admin kami bantu tentukan ukuran yang pas.",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Silakan kirim fotonya, nanti admin kami bantu tentukan ukuran yang pas.",
+  );
+  assert.match(result.messages[0], /fotonya sudah.*terima|foto.*catat/i);
+  assert.doesNotMatch(result.messages[0], /kirim(?:kan)?\s+fotonya/i);
+});
+
+test("does not send exact dimensions that the customer never provided", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      photoReferences: "https://drive.google.com/file/d/photo/view",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["kamu tentukan coba"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Baik kak, ukuran standar yang sering kami buat biasanya panjang 120cm x lebar 60cm x tinggi 75cm.",
+        dataPatch: { dimensions: "120cm x 60cm x 75cm" },
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Baik kak, ukuran standar yang sering kami buat biasanya panjang 120cm x lebar 60cm x tinggi 75cm.",
+  );
+  assert.doesNotMatch(result.messages[0], /120cm|60cm|75cm/i);
+  assert.match(result.messages[0], /admin HIJAOE.*ukuran|ukuran.*admin HIJAOE/i);
+  assert.match(result.session.data.dimensions, /belum ditentukan/i);
+  assert.doesNotMatch(result.session.data.dimensions, /120cm|60cm|75cm/i);
+});
+
+test("records deferred dimensions and lets DeepSeek move to the next missing lead field", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    historySummary: "Admin menanyakan ukuran atau spesifikasi tambahan.",
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      photoReferences: "https://drive.google.com/file/d/photo/view",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["kamu tentukan coba"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Siap Kak, ukuran nanti kami sesuaikan dari referensi modelnya. Boleh tahu atas nama siapa untuk catatan?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary:
+          "Pelanggan menyerahkan ukuran meja sekolah kepada HIJAOE dari foto referensi.",
+      }),
+  });
+
+  assert.match(result.session.data.dimensions, /belum ditentukan/i);
+  assert.match(result.messages[0], /atas nama siapa|nama/i);
+});
+
+test("records absent photo references so DeepSeek does not ask for them again", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["gada refrensi foto"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, tidak masalah kalau belum ada foto referensi. Boleh tahu target waktunya kapan?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan tidak memiliki foto referensi.",
+      }),
+  });
+
+  assert.match(result.session.data.photoReferences, /tidak ada referensi foto/i);
+  assert.doesNotMatch(result.messages[0], /kirim(?:kan)?\s+foto|referensi foto.*dikirim/i);
+});
+
+test("records natural color as material or style context", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["warna natural aja"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, warna natural saya catat. Ada referensi foto atau contoh model?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan memilih warna natural.",
+      }),
+  });
+
+  assert.match(result.session.data.material, /warna natural/i);
+});
+
+test("does not invent available color options", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["emang ada warna apa aja"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Pilihan warna standar biasanya biru, hijau, merah, kuning, dan putih. Ada preferensi warna tertentu?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Pilihan warna standar biasanya biru, hijau, merah, kuning, dan putih. Ada preferensi warna tertentu?",
+  );
+  assert.doesNotMatch(result.messages[0], /biru, hijau, merah, kuning/i);
+  assert.match(result.messages[0], /admin HIJAOE.*cek|cek.*admin HIJAOE/i);
+});
+
+test("does not invent material availability or technical decisions", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["bahan apa aja yang tersedia"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Kami tersedia bahan kayu jati, multipleks, besi hollow, dan aluminium, Kak. Silakan pilih salah satu.",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Kami tersedia bahan kayu jati, multipleks, besi hollow, dan aluminium, Kak. Silakan pilih salah satu.",
+  );
+  assert.doesNotMatch(result.messages[0], /jati|multipleks|besi hollow|aluminium/i);
+  assert.match(result.messages[0], /admin HIJAOE.*cek|cek.*admin HIJAOE/i);
+});
+
+test("records unsupported customer product questions into the lead summary", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["bahan apa aja yang tersedia?"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Kami tersedia bahan kayu jati, multipleks, besi hollow, dan aluminium, Kak.",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.match(result.session.data.customerQuestions, /bahan apa aja/i);
+  assert.match(buildSummary(result.session), /Pertanyaan customer: bahan apa aja/i);
+  assert.doesNotMatch(result.messages[0], /jati|multipleks|besi hollow|aluminium/i);
+});
+
+test("does not ask quantity for linear or area work like fences", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Pagar rumah",
+      location: "Gowa",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["saya mau buat pagar rumah di gowa"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, untuk pagar rumahnya butuh berapa jumlahnya?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin membuat pagar rumah di Gowa.",
+      }),
+  });
+
+  assert.notEqual(
+    result.messages[0],
+    "Baik Kak, untuk pagar rumahnya butuh berapa jumlahnya?",
+  );
+  assert.doesNotMatch(result.messages[0], /jumlah|berapa unit|berapa set/i);
+  assert.match(result.messages[0], /ukuran|panjang|area|foto/i);
+});
+
+test("does not treat kitchen set as unit quantity work", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Kitchen set",
+      location: "Makassar",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["saya mau kitchen set di makassar"],
+    complete: async () =>
+      JSON.stringify({
+        reply: "Baik Kak, untuk kitchen setnya butuh berapa set?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin membuat kitchen set di Makassar.",
+      }),
+  });
+
+  assert.notEqual(result.messages[0], "Baik Kak, untuk kitchen setnya butuh berapa set?");
+  assert.doesNotMatch(result.messages[0], /berapa set|jumlah|unit/i);
+  assert.match(result.messages[0], /ukuran|panjang|area|foto/i);
+});
+
+test("allows quantity questions for unit based furniture work", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja & Kursi Sekolah",
+      location: "Tamalanrea",
+    },
+  };
+
+  const reply = "Baik Kak, untuk meja kursi sekolahnya butuh berapa set?";
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["saya mau meja kursi sekolah di tamalanrea"],
+    complete: async () =>
+      JSON.stringify({
+        reply,
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "Pelanggan ingin meja kursi sekolah di Tamalanrea.",
+      }),
+  });
+
+  assert.equal(result.messages[0], reply);
+});
+
+test("does not ask for contact after the customer name is already known", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      name: "Nasroh",
+      service: "Meja & Kursi Sekolah",
+      location: "Tamalanrea",
+      dimensions: "Belum ditentukan",
+      material: "Warna natural",
+      targetTime: "Secepatnya",
+      photoReferences: "Tidak ada referensi foto",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["nasroh"],
+    complete: async () =>
+      JSON.stringify({
+        reply:
+          "Terima kasih, Kak Nasroh. Untuk kelengkapan data, boleh kami tahu nama lengkap dan kontak yang bisa dihubungi?",
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.equal(result.session.state, "confirming");
+  assert.match(result.messages[0], /Ringkasan kebutuhan awal/);
+  assert.doesNotMatch(result.messages[0], /kontak|nomor|nama lengkap/i);
+});
+
+test("allows exact dimensions when they came from the customer", async () => {
+  const session = {
+    ...createSession("628111"),
+    introShown: true,
+    data: {
+      ...createSession("628111").data,
+      service: "Meja sekolah",
+      location: "Gowa",
+      dimensions: "120cm x 60cm x 75cm",
+    },
+  };
+
+  const reply =
+    "Saya catat ukuran 120cm x 60cm x 75cm ya, Kak. Ada jumlah meja yang dibutuhkan?";
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["ukurannya 120cm x 60cm x 75cm"],
+    complete: async () =>
+      JSON.stringify({
+        reply,
+        dataPatch: {},
+        state: "active",
+        readyToConfirm: false,
+        handoff: false,
+        handoffReason: "",
+        historySummary: "",
+      }),
+  });
+
+  assert.equal(result.messages[0], reply);
+});
+
+test("rejects restricted DeepSeek replies", async () => {
+  for (const reply of [
+    "Harganya Rp2 juta, Kak.",
+    "Saya bot HIJAOE, siap membantu.",
+    "Ini hanya template otomatis.",
+    "Pasti selesai hari Senin.",
+  ]) {
+    const result = await runDeepSeekConversation({
+      session: createSession("628111"),
+      messages: ["halo"],
+      complete: async () =>
+        JSON.stringify({
+          reply,
+          dataPatch: {},
+          state: "active",
+          readyToConfirm: false,
+          handoff: false,
+          handoffReason: "",
+          historySummary: "",
+        }),
+    });
+
+    assert.notEqual(result.messages[0], reply);
+    assert.doesNotMatch(
+      result.messages[0],
+      /Rp2 juta|bot HIJAOE|template otomatis|Pasti selesai/i,
+    );
+  }
+});
+
+test("creates a lead when a confirmation session is accepted", async () => {
+  const session = {
+    ...createSession("628111"),
+    state: "confirming",
+    data: {
+      ...createSession("628111").data,
+      name: "Ari",
+      service: "Meja sekolah",
+      location: "Gowa",
+    },
+  };
+
+  const result = await runDeepSeekConversation({
+    session,
+    messages: ["ya"],
+    complete: async () => {
+      throw new Error("should not call DeepSeek for local confirmation");
+    },
+    now: new Date("2026-06-30T04:00:00.000Z"),
+  });
+
+  assert.equal(result.session.state, "handoff");
+  assert.equal(result.lead.customer_name, "Ari");
+  assert.equal(result.lead.service_type, "Meja sekolah");
+  assert.equal(result.lead.created_at, "2026-06-30T04:00:00.000Z");
+});
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

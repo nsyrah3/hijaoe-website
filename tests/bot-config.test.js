@@ -24,6 +24,7 @@ test("loads bot defaults without exposing raw secrets in public config", () => {
   assert.equal(config.timeZone, "Asia/Makassar");
   assert.equal(config.takeoverHours, 24);
   assert.equal(config.maxMessageAgeSeconds, 600);
+  assert.equal(config.batchWindowMs, 7000);
   assert.equal(config.whatsappNumber, "6285121508159");
   assert.equal("deepseekApiKey" in config.public, false);
   assert.equal(config.secrets.deepseekApiKey, "test-deepseek");

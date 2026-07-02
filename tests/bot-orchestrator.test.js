@@ -41,7 +41,7 @@ function createHarness(overrides = {}) {
       return id;
     },
   };
-  const syncService = {
+  const syncService = overrides.syncService || {
     async uploadCustomerPhoto(input) {
       state.uploads.push(input);
       return {
@@ -63,6 +63,8 @@ function createHarness(overrides = {}) {
     composeReply:
       overrides.composeReply ||
       (async ({ deterministicMessages }) => deterministicMessages.join("\n\n")),
+    runConversation: overrides.runConversation,
+    batchWindowMs: overrides.batchWindowMs || 0,
     clock,
     maxMessageAgeSeconds: 600,
     takeoverHours: 24,
@@ -93,9 +95,10 @@ test("first inbound message creates and saves a session", async () => {
   const result = await orchestrator.handleIncoming(incoming());
 
   assert.equal(result.action, "replied");
-  assert.equal(state.sessions.get("628111").state, "name");
+  assert.equal(state.sessions.get("628111").state, "service");
   assert.equal(state.sent.length, 1);
-  assert.match(state.sent[0].text, /Asisten HIJAOE/);
+  assert.doesNotMatch(state.sent[0].text, /Asisten|AI|bot/i);
+  assert.match(state.sent[0].text, /bikin|kerjakan|buat/i);
 });
 
 test("paused and duplicate messages produce no side effects", async () => {
@@ -115,6 +118,52 @@ test("paused and duplicate messages produce no side effects", async () => {
     "duplicate",
   );
   assert.equal(state.sent.length, 0);
+});
+
+test("batches quick customer messages into one conversation turn", async () => {
+  let capturedMessages = [];
+  const { orchestrator, state } = createHarness({
+    batchWindowMs: 7000,
+    runConversation: async ({ session, messages }) => {
+      capturedMessages = messages;
+      return {
+        session: {
+          ...session,
+          state: "active",
+          data: {
+            ...session.data,
+            service: "Meja sekolah",
+            location: "Gowa",
+          },
+        },
+        messages: ["Siap Kak, meja sekolah untuk Gowa ya. Mau jumlah berapa?"],
+        lead: null,
+        replyIsFinal: true,
+      };
+    },
+  });
+
+  assert.equal(
+    (await orchestrator.handleIncoming(
+      incoming({ id: "batch-1", text: "saya mau meja sekolah" }),
+    )).action,
+    "queued",
+  );
+  assert.equal(
+    (await orchestrator.handleIncoming(
+      incoming({ id: "batch-2", text: "untuk daerah gowa" }),
+    )).action,
+    "queued",
+  );
+
+  await orchestrator.flushPending("628111");
+
+  assert.deepEqual(capturedMessages, [
+    "saya mau meja sekolah",
+    "untuk daerah gowa",
+  ]);
+  assert.equal(state.sent.length, 1);
+  assert.match(state.sent[0].text, /jumlah berapa/);
 });
 
 test("photo upload URL is stored in the photo field", async () => {
@@ -144,6 +193,51 @@ test("photo upload URL is stored in the photo field", async () => {
     state.sessions.get("628111").data.photoReferences,
     /drive\.google\.com/,
   );
+});
+
+test("photo upload failure still passes photo context into the conversation", async () => {
+  let capturedMessages = [];
+  const { orchestrator, state } = createHarness({
+    syncService: {
+      async uploadCustomerPhoto(input) {
+        state.uploads.push(input);
+        return { ok: false };
+      },
+      async syncConfirmedLead(number, lead) {
+        state.leads.push({ number, lead });
+        return { ok: true };
+      },
+    },
+    runConversation: async ({ session, messages }) => {
+      capturedMessages = messages;
+      return {
+        session: {
+          ...session,
+          state: "active",
+        },
+        messages: ["Siap Kak, fotonya sudah saya terima. Ada ukuran atau jumlahnya?"],
+        lead: null,
+        replyIsFinal: true,
+      };
+    },
+  });
+
+  await orchestrator.handleIncoming(
+    incoming({
+      id: "photo-fail",
+      type: "image",
+      text: "ini kak",
+      media: { mimeType: "image/jpeg", bytes: Buffer.from("photo") },
+    }),
+  );
+
+  assert.equal(state.uploads.length, 1);
+  assert.match(capturedMessages.join("\n"), /ini kak/);
+  assert.match(
+    capturedMessages.join("\n"),
+    /Foto diterima, belum tersimpan ke Drive/,
+  );
+  assert.match(state.sent[0].text, /fotonya sudah saya terima/i);
 });
 
 test("confirmed lead is synchronized exactly once", async () => {
@@ -216,9 +310,10 @@ test("starts a fresh conversation after an expired manual takeover handoff", asy
   );
 
   assert.equal(result.action, "replied");
-  assert.equal(state.sessions.get("628111").state, "name");
+  assert.equal(state.sessions.get("628111").state, "service");
   assert.equal(state.pausedUntil.has("628111"), false);
-  assert.match(state.sent[0].text, /Asisten HIJAOE/);
+  assert.doesNotMatch(state.sent[0].text, /Asisten|AI|bot/i);
+  assert.match(state.sent[0].text, /bikin|kerjakan|buat/i);
 });
 
 test("manual own message pauses only that contact for 24 hours", async () => {

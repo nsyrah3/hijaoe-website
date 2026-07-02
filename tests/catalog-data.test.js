@@ -42,6 +42,37 @@ test("catalog assets use stable WebP paths and descriptive alt text", () => {
   }
 });
 
+test("school furniture catalog entries link to the detail catalog page", () => {
+  const schoolCatalogIds = [
+    "meja-sekolah",
+    "kursi-sekolah",
+    "meja-rangka-besi",
+  ];
+
+  for (const id of schoolCatalogIds) {
+    const item = catalogItems.find((catalogItem) => catalogItem.id === id);
+
+    assert.equal(item.catalogUrl, "/layanan/meja-kursi-sekolah-makassar");
+  }
+});
+
+test("canopy catalog entries link to the detail catalog page", () => {
+  const canopyCatalogIds = [
+    "kanopi-alderon",
+    "kanopi-polikarbonat",
+    "kanopi-spandek",
+    "kanopi-membran",
+    "pergola-besi",
+    "carport-beratap",
+  ];
+
+  for (const id of canopyCatalogIds) {
+    const item = catalogItems.find((catalogItem) => catalogItem.id === id);
+
+    assert.equal(item.catalogUrl, "/layanan/kanopi-makassar");
+  }
+});
+
 test("homepage has six valid featured catalog entries", () => {
   assert.equal(featuredCatalogIds.length, 6);
   assert.equal(new Set(featuredCatalogIds).size, 6);
