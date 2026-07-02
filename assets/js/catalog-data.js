@@ -15,7 +15,7 @@ const categoryLabelById = Object.fromEntries(
   catalogCategories.map((category) => [category.id, category.label]),
 );
 
-function catalogItem(id, title, category, alt) {
+function catalogItem(id, title, category, alt, options = {}) {
   return {
     id,
     title,
@@ -23,6 +23,7 @@ function catalogItem(id, title, category, alt) {
     categoryLabel: categoryLabelById[category],
     image: `assets/images/catalog/${id}.webp`,
     alt,
+    ...options,
   };
 }
 
@@ -215,24 +216,36 @@ export const catalogItems = [
     "Kanopi Alderon",
     "atap-kanopi",
     "Kanopi alderon untuk carport rumah dengan rangka besi rapi",
+    {
+      catalogUrl: "/layanan/kanopi-makassar",
+    },
   ),
   catalogItem(
     "kanopi-polikarbonat",
     "Kanopi Polikarbonat",
     "atap-kanopi",
     "Kanopi polikarbonat transparan untuk teras atau garasi rumah",
+    {
+      catalogUrl: "/layanan/kanopi-makassar",
+    },
   ),
   catalogItem(
     "kanopi-spandek",
     "Kanopi Spandek",
     "atap-kanopi",
     "Kanopi spandek dengan rangka besi untuk halaman atau tempat usaha",
+    {
+      catalogUrl: "/layanan/kanopi-makassar",
+    },
   ),
   catalogItem(
     "kanopi-membran",
     "Kanopi Membran",
     "atap-kanopi",
     "Kanopi membran putih untuk teras cafe halaman rumah atau area usaha",
+    {
+      catalogUrl: "/layanan/kanopi-makassar",
+    },
   ),
   catalogItem(
     "rangka-atap-baja-ringan",
@@ -257,12 +270,18 @@ export const catalogItems = [
     "Pergola Besi",
     "atap-kanopi",
     "Pergola besi untuk teras atau taman rumah dengan kisi-kisi dekoratif",
+    {
+      catalogUrl: "/layanan/kanopi-makassar",
+    },
   ),
   catalogItem(
     "carport-beratap",
     "Carport Beratap",
     "atap-kanopi",
     "Carport beratap dengan rangka besi dan penutup atap untuk kendaraan",
+    {
+      catalogUrl: "/layanan/kanopi-makassar",
+    },
   ),
   catalogItem(
     "perbaikan-atap-bocor",
@@ -361,18 +380,27 @@ export const catalogItems = [
     "Meja Sekolah",
     "interior-furnitur",
     "Meja sekolah kayu dengan rangka kuat untuk ruang kelas",
+    {
+      catalogUrl: "/layanan/meja-kursi-sekolah-makassar",
+    },
   ),
   catalogItem(
     "kursi-sekolah",
     "Kursi Sekolah",
     "interior-furnitur",
     "Kursi sekolah kayu dengan rangka kokoh untuk ruang belajar",
+    {
+      catalogUrl: "/layanan/meja-kursi-sekolah-makassar",
+    },
   ),
   catalogItem(
     "meja-rangka-besi",
     "Meja Rangka Besi",
     "interior-furnitur",
     "Meja custom dengan rangka besi untuk rumah kantor atau warung",
+    {
+      catalogUrl: "/layanan/meja-kursi-sekolah-makassar",
+    },
   ),
   catalogItem(
     "rak-display-toko",

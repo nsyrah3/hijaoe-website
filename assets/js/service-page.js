@@ -45,6 +45,37 @@ document.querySelectorAll("[data-year]").forEach((element) => {
   element.textContent = new Date().getFullYear();
 });
 
+document.querySelectorAll("[data-service-model-gallery]").forEach((gallery) => {
+  const previewImage = gallery.querySelector("[data-service-model-preview-image]");
+  const previewTitle = gallery.querySelector("[data-service-model-preview-title]");
+  const thumbs = [...gallery.querySelectorAll("[data-service-model-thumb]")];
+
+  if (!previewImage || !previewTitle || thumbs.length === 0) {
+    return;
+  }
+
+  thumbs.forEach((thumb) => {
+    thumb.addEventListener("click", () => {
+      const { serviceModelImage, serviceModelAlt, serviceModelTitle } = thumb.dataset;
+
+      if (!serviceModelImage || !serviceModelAlt || !serviceModelTitle) {
+        return;
+      }
+
+      thumbs.forEach((item) => item.setAttribute("aria-pressed", "false"));
+      thumb.setAttribute("aria-pressed", "true");
+      previewImage.dataset.switching = "true";
+      previewImage.src = serviceModelImage;
+      previewImage.alt = serviceModelAlt;
+      previewTitle.textContent = serviceModelTitle;
+
+      window.setTimeout(() => {
+        delete previewImage.dataset.switching;
+      }, 180);
+    });
+  });
+});
+
 if (window.lucide) {
   window.lucide.createIcons({
     attrs: {

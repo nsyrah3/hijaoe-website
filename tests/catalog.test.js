@@ -57,6 +57,20 @@ test("catalog card exposes service data and lazy image", () => {
   assert.match(html, /Tanyakan layanan ini/);
 });
 
+test("catalog card shows detail catalog link only when configured", () => {
+  const html = renderCatalogCards([
+    {
+      ...sample[0],
+      catalogUrl: "/layanan/meja-kursi-sekolah-makassar",
+    },
+    sample[1],
+  ]);
+
+  assert.match(html, /Lihat katalog/);
+  assert.match(html, /href="\/layanan\/meja-kursi-sekolah-makassar"/);
+  assert.equal((html.match(/Lihat katalog/g) || []).length, 1);
+});
+
 test("catalog filter renderer escapes labels and category ids", () => {
   const html = renderCatalogFilters(
     [

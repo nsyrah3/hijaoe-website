@@ -44,6 +44,22 @@ export function buildServiceWhatsAppUrl(title) {
   return buildWhatsAppUrl(buildServiceWhatsAppMessage(title));
 }
 
+function renderCatalogDetailLink(item) {
+  if (!item.catalogUrl) {
+    return "";
+  }
+
+  return `
+              <a
+                class="catalog-card__catalog-link"
+                href="${escapeHtml(item.catalogUrl)}"
+              >
+                Lihat katalog
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
+              </a>
+            `;
+}
+
 export function renderCatalogFilters(categories, activeCategory) {
   return categories
     .map(
@@ -83,15 +99,18 @@ export function renderCatalogCards(items) {
           <div class="catalog-card__body">
             <span>${escapeHtml(item.categoryLabel)}</span>
             <h3>${escapeHtml(item.title)}</h3>
-            <a
-              href="${escapeHtml(buildServiceWhatsAppUrl(item.title))}"
-              target="_blank"
-              rel="noreferrer"
-              data-service-whatsapp="${escapeHtml(item.id)}"
-            >
-              Tanyakan layanan ini
-              <i data-lucide="message-circle" aria-hidden="true"></i>
-            </a>
+            <div class="catalog-card__actions">
+              <a
+                href="${escapeHtml(buildServiceWhatsAppUrl(item.title))}"
+                target="_blank"
+                rel="noreferrer"
+                data-service-whatsapp="${escapeHtml(item.id)}"
+              >
+                Tanyakan layanan ini
+                <i data-lucide="message-circle" aria-hidden="true"></i>
+              </a>
+              ${renderCatalogDetailLink(item)}
+            </div>
           </div>
         </article>
       `,

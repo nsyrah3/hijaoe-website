@@ -9,6 +9,7 @@ import {
   business,
   processSteps,
 } from "../assets/js/site-data.js";
+import { getServiceModelCatalog } from "../assets/js/service-catalog-data.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = path.join(root, "layanan");
@@ -52,9 +53,10 @@ ${urls
 `;
 }
 
-function buildWhatsAppUrl(serviceName) {
+function buildWhatsAppUrl(serviceName, modelName = "") {
+  const topic = modelName ? `${serviceName}, model ${modelName}` : serviceName;
   const message =
-    `Halo HIJAOE, saya ingin konsultasi tentang ${serviceName}. ` +
+    `Halo HIJAOE, saya ingin konsultasi tentang ${topic}. ` +
     "Lokasi pengerjaan saya di ...";
   return `https://wa.me/${business.phoneInternational}?text=${encodeURIComponent(message)}`;
 }
@@ -118,6 +120,102 @@ function renderProcess() {
             </li>`,
     )
     .join("");
+}
+
+function modelGalleryTitle(page) {
+  if (page.slug === "meja-kursi-sekolah-makassar") {
+    return "Inspirasi Model Meja & Kursi Sekolah";
+  }
+
+  if (page.slug === "kanopi-makassar") {
+    return "Inspirasi Model Kanopi";
+  }
+
+  return `Inspirasi Model ${page.heading}`;
+}
+
+function renderServiceModelThumbs(models) {
+  return models
+    .map(
+      (modelItem, index) => `<button
+                class="service-model-gallery__thumb"
+                type="button"
+                data-service-model-thumb
+                data-service-model-image="/${escapeHtml(modelItem.image)}"
+                data-service-model-alt="${escapeHtml(modelItem.alt)}"
+                data-service-model-title="${escapeHtml(modelItem.title)}"
+                aria-pressed="${index === 0 ? "true" : "false"}"
+              >
+                <img
+                  src="/${escapeHtml(modelItem.image)}"
+                  alt=""
+                  loading="lazy"
+                  width="160"
+                  height="120"
+                  aria-hidden="true"
+                >
+                <span>${escapeHtml(modelItem.title)}</span>
+              </button>`,
+    )
+    .join("");
+}
+
+function renderServiceModelGallery(page, models) {
+  const activeModel = models[0];
+  const galleryTitle = modelGalleryTitle(page);
+
+  return `<div
+            class="service-model-gallery"
+            data-service-model-gallery
+            aria-label="${escapeHtml(galleryTitle)}"
+          >
+            <article class="service-model-gallery__stage">
+              <img
+                src="/${escapeHtml(activeModel.image)}"
+                alt="${escapeHtml(activeModel.alt)}"
+                loading="lazy"
+                width="640"
+                height="480"
+                data-service-model-preview-image
+              >
+              <div class="service-model-gallery__shade"></div>
+              <div class="service-model-gallery__content">
+                <p>Model aktif</p>
+                <h3 data-service-model-preview-title>${escapeHtml(activeModel.title)}</h3>
+              </div>
+            </article>
+            <div class="service-model-gallery__thumbs" aria-label="Pilih model">
+              ${renderServiceModelThumbs(models)}
+            </div>
+          </div>`;
+}
+
+function renderServiceModelCatalog(page) {
+  const models = getServiceModelCatalog(page.slug);
+
+  if (models.length === 0) {
+    return "";
+  }
+
+  const galleryTitle = modelGalleryTitle(page);
+
+  return `
+      <section class="section service-model-catalog" aria-labelledby="service-model-catalog-${escapeHtml(page.slug)}">
+        <div class="container">
+          <header class="service-model-catalog__header">
+            <div>
+              <p class="eyebrow eyebrow--dark">Galeri model</p>
+              <h2 id="service-model-catalog-${escapeHtml(page.slug)}">${escapeHtml(galleryTitle)}</h2>
+            </div>
+            <p>
+              Gambar berikut adalah contoh model pesanan untuk memudahkan
+              memilih bentuk awal. Ukuran, bahan, warna, dan detail akhir
+              tetap menyesuaikan lokasi, kebutuhan, dan budget.
+            </p>
+          </header>
+          ${renderServiceModelGallery(page, models)}
+        </div>
+      </section>`;
 }
 
 function getRelatedPages(page) {
@@ -315,7 +413,7 @@ function renderPage(page) {
           </aside>
         </div>
       </section>
-
+${renderServiceModelCatalog(page)}
       <section class="section section--dark service-page__process">
         <div class="container">
           <p class="eyebrow"><span></span>Alur pemesanan</p>
