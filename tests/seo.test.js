@@ -195,8 +195,10 @@ test("service pages expose discovery and conversion landmarks", async () => {
     );
     assert.match(
       html,
-      /Beberapa pekerjaan sebelumnya dikerjakan di area Bulukumba hingga Palopo\./,
+      /Menjangkau area Bulukumba hingga Palopo\./,
     );
+    assert.doesNotMatch(html, /\bpernah\b/i);
+    assert.doesNotMatch(html, /Untuk luar kota/i);
   }
 });
 

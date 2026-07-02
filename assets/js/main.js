@@ -5,7 +5,7 @@ import {
   serviceAreas,
   services,
   buildWhatsAppUrl,
-} from "./site-data.js?v=20260701-sulsel-area";
+} from "./site-data.js?v=20260702-sulsel-reach";
 import {
   renderProcess,
   renderProjectPreview,

@@ -52,14 +52,15 @@ test("service area covers Makassar and broader South Sulawesi work reach", () =>
     serviceAreas.map((area) => area.city),
     ["Makassar", "Gowa & Maros", "Sulawesi Selatan"],
   );
-  assert.match(
+  assert.equal(
     business.serviceArea,
-    /Beberapa pekerjaan sebelumnya dikerjakan di area Bulukumba hingga Palopo/i,
+    "Menjangkau area Bulukumba hingga Palopo.",
   );
-  assert.match(
-    business.serviceArea,
-    /Untuk luar kota, jadwal survei, pengiriman, dan pemasangan menyesuaikan lokasi dan jenis pekerjaan\./i,
+  assert.doesNotMatch(
+    `${business.serviceArea} ${JSON.stringify(serviceAreas)}`,
+    /\bpernah\b/i,
   );
+  assert.doesNotMatch(business.serviceArea, /Untuk luar kota/i);
 });
 
 test("homepage projects are six featured catalog services", () => {

@@ -10,8 +10,7 @@ export const business = {
   city: "Makassar",
   serviceCities: ["Makassar", "Gowa", "Maros", "Bulukumba", "Palopo"],
   serviceAreaTitle: "Melayani Makassar dan berbagai wilayah Sulawesi Selatan.",
-  serviceArea:
-    "Beberapa pekerjaan sebelumnya dikerjakan di area Bulukumba hingga Palopo. Untuk luar kota, jadwal survei, pengiriman, dan pemasangan menyesuaikan lokasi dan jenis pekerjaan.",
+  serviceArea: "Menjangkau area Bulukumba hingga Palopo.",
   mapUrl:
     "https://www.google.com/maps/place/HIJAOE/@-5.0853324,119.5224587,15z/data=!3m1!4b1!4m6!3m5!1s0x2dbefbcbfcf97c0b:0xb8cad84f65c55a60!8m2!3d-5.0853325!4d119.5327585!16s%2Fg%2F11g0vyt5dz",
 };
@@ -131,7 +130,7 @@ export const serviceAreas = [
   },
   {
     city: "Sulawesi Selatan",
-    note: "Pekerjaan pernah menjangkau Bulukumba hingga Palopo",
+    note: "Menjangkau area Bulukumba hingga Palopo",
   },
 ];
 
